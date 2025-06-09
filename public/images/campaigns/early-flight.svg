@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+  <path d="M22 16.5L12 21l-10-4.5v-1.8l10 4.5 10-4.5v1.8z" stroke="#4CAF50" stroke-width="1.5"/>
+  <path d="M12 12l10-4.5L12 3 2 7.5 12 12z" stroke="#4CAF50" stroke-width="1.5"/>
+  <path d="M2 12.5l10 4.5 10-4.5" stroke="#4CAF50" stroke-width="1.5"/>
+  <path d="M12 12v9" stroke="#4CAF50" stroke-width="1.5"/>
+  <path d="M17 6.5l3-1.5v3l-3 1.5V6.5z" fill="#4CAF50"/>
+</svg> 
