@@ -15,6 +15,7 @@ interface Passenger {
   birthMonth: string;
   birthYear: string;
   hasMilCard: boolean;
+  isAccountOwner?: boolean;
 }
 
 export default function YolcularimPage() {
@@ -111,46 +112,57 @@ export default function YolcularimPage() {
                   </div>
                 ) : (
                   <>
-                    {passengers.map((passenger) => (
-                      <div 
-                        key={passenger.id}
-                        className="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50 transition-colors items-center"
-                      >
-                        <div className="col-span-4 flex items-center gap-3">
-                          <div className="w-8 h-8 bg-green-50 rounded-full flex items-center justify-center">
-                            <User className="w-4 h-4 text-green-600" />
+                    {(() => {
+                      // isAccountOwner true olanı başa al, diğerleri altına gelsin
+                      const owner = passengers.find(p => p.isAccountOwner);
+                      const others = passengers.filter(p => !p.isAccountOwner);
+                      const sorted = owner ? [owner, ...others] : others;
+                      return sorted.map((passenger) => (
+                        <div 
+                          key={passenger.id}
+                          className="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50 transition-colors items-center"
+                        >
+                          <div className="col-span-4 flex items-center gap-3">
+                            <div className="w-8 h-8 bg-green-50 rounded-full flex items-center justify-center">
+                              <User className="w-4 h-4 text-green-600" />
+                            </div>
+                            <div>
+                              <span className="font-medium">{passenger.firstName} {passenger.lastName}</span>
+                              {passenger.isAccountOwner && (
+                                <span className="ml-2 text-xs text-gray-400 bg-gray-100 rounded px-2 py-0.5">Hesap Sahibi</span>
+                              )}
+                            </div>
                           </div>
-                          <div>
-                            <span className="font-medium">{passenger.firstName} {passenger.lastName}</span>
+                          <div className="col-span-3 text-gray-600">{passenger.identityNumber || '-'}</div>
+                          <div className="col-span-3 text-gray-600">
+                            {formatDate(passenger.birthDay, passenger.birthMonth, passenger.birthYear)}
+                          </div>
+                          <div className="col-span-1">
+                            {passenger.hasMilCard && (
+                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            )}
+                          </div>
+                          <div className="col-span-1">
+                            <div className="flex items-center gap-2 justify-end">
+                              <button 
+                                className="p-1.5 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-gray-100 transition-colors"
+                                onClick={() => handleEdit(passenger.id)}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                              {!passenger.isAccountOwner && (
+                                <button 
+                                  className="p-1.5 text-gray-400 hover:text-red-600 rounded-lg hover:bg-gray-100 transition-colors"
+                                  onClick={() => handleDelete(passenger.id)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
-                        <div className="col-span-3 text-gray-600">{passenger.identityNumber || '-'}</div>
-                        <div className="col-span-3 text-gray-600">
-                          {formatDate(passenger.birthDay, passenger.birthMonth, passenger.birthYear)}
-                        </div>
-                        <div className="col-span-1">
-                          {passenger.hasMilCard && (
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          )}
-                        </div>
-                        <div className="col-span-1">
-                          <div className="flex items-center gap-2 justify-end">
-                            <button 
-                              className="p-1.5 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-gray-100 transition-colors"
-                              onClick={() => handleEdit(passenger.id)}
-                            >
-                              <Edit className="w-4 h-4" />
-                            </button>
-                            <button 
-                              className="p-1.5 text-gray-400 hover:text-red-600 rounded-lg hover:bg-gray-100 transition-colors"
-                              onClick={() => handleDelete(passenger.id)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                      ));
+                    })()}
 
                     {passengers.length === 0 && (
                       <div className="text-center py-8 text-gray-500">

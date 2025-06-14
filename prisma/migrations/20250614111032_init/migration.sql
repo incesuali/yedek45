@@ -106,6 +106,7 @@ CREATE TABLE "Passenger" (
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'active',
+    "isAccountOwner" BOOLEAN NOT NULL DEFAULT false,
     CONSTRAINT "Passenger_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 

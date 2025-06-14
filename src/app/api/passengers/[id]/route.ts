@@ -154,6 +154,13 @@ export async function DELETE(
         { status: 404 }
       );
     }
+    // Hesap sahibi yolcu silinemez
+    if (existingPassenger.isAccountOwner) {
+      return NextResponse.json(
+        { error: 'Hesap sahibi yolcu silinemez' },
+        { status: 403 }
+      );
+    }
 
     // Soft delete
     await prisma.passenger.update({

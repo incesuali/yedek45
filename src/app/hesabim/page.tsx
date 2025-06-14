@@ -6,16 +6,18 @@ import { toast } from 'react-hot-toast';
 import AccountSidebar from '@/components/AccountSidebar';
 import ChangePasswordModal from '@/components/ChangePasswordModal';
 import DeleteAccountModal from '@/components/DeleteAccountModal';
+import { useSession } from 'next-auth/react';
 
 export default function HesabimPage() {
   const router = useRouter();
+  const { update } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    email: 'test@gurbet.biz', // Sabit e-posta
-    countryCode: '+90',
+    email: '', // Başlangıçta boş olacak
+    countryCode: '',
     phone: '',
     birthDay: '',
     birthMonth: '',
@@ -78,6 +80,13 @@ export default function HesabimPage() {
         throw new Error(data.error || 'Bir hata oluştu');
       }
 
+      // Session'ı güncelle
+      if (update) {
+        await update();
+      } else {
+        router.refresh();
+      }
+
       toast.success('Bilgileriniz başarıyla kaydedildi');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Bilgiler kaydedilirken bir hata oluştu');
@@ -96,8 +105,8 @@ export default function HesabimPage() {
             <h1 className="text-2xl font-bold text-gray-800 mb-6">Hesap Bilgileri</h1>
             
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Ad Soyad TC */}
-              <div className="grid grid-cols-3 gap-4">
+              {/* 1. Satır: Ad, Soyad, TC Kimlik No */}
+              <div className="grid grid-cols-3 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Ad</label>
                   <input
@@ -149,26 +158,53 @@ export default function HesabimPage() {
                 </div>
               </div>
 
-              {/* E-posta ve Doğum Tarihi */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex gap-4">
-                  <div className="w-1/2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">E-Posta</label>
-                    <input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      className="w-full px-3 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500"
-                      disabled
-                    />
+              {/* 2. Satır: Doğum Tarihi, Ülke Kodu + Cep Telefonu, Cinsiyet */}
+              <div className="grid grid-cols-3 gap-8">
+                {/* Doğum Tarihi */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Doğum Tarihi</label>
+                  <div className="flex gap-1 min-w-[220px]">
+                    <select
+                      value={formData.birthDay}
+                      onChange={(e) => setFormData({...formData, birthDay: e.target.value})}
+                      className="w-12 px-1 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500 text-sm"
+                    >
+                      <option value="">Gün</option>
+                      {Array.from({length: 31}, (_, i) => i + 1).map(day => (
+                        <option key={day} value={day}>{day}</option>
+                      ))}
+                    </select>
+                    <select
+                      value={formData.birthMonth}
+                      onChange={(e) => setFormData({...formData, birthMonth: e.target.value})}
+                      className="w-20 px-1 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500 text-sm"
+                    >
+                      <option value="">Ay</option>
+                      {Array.from({length: 12}, (_, i) => i + 1).map(month => (
+                        <option key={month} value={month}>{month}</option>
+                      ))}
+                    </select>
+                    <select
+                      value={formData.birthYear}
+                      onChange={(e) => setFormData({...formData, birthYear: e.target.value})}
+                      className="w-20 px-1 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500 text-sm"
+                    >
+                      <option value="">Yıl</option>
+                      {Array.from({length: 100}, (_, i) => new Date().getFullYear() - i).map(year => (
+                        <option key={year} value={year}>{year}</option>
+                      ))}
+                    </select>
                   </div>
-                  <div className="flex gap-2 w-1/2">
-                    <div className="w-[60px]">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Kod</label>
+                </div>
+                {/* Ülke Kodu + Cep Telefonu */}
+                <div>
+                  <div className="flex gap-6 items-end">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Ülke Kodu</label>
                       <select
                         value={formData.countryCode}
                         onChange={(e) => setFormData({...formData, countryCode: e.target.value})}
-                        className="w-full px-1 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500 appearance-none text-sm"
+                        className="w-20 px-2 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500"
                       >
                         <option value="">Seç</option>
                         <option value="+90">+90</option>
@@ -193,72 +229,47 @@ export default function HesabimPage() {
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-2 items-end">
-                  <div className="w-24">
-                    <select 
-                      value={formData.birthDay}
-                      onChange={(e) => setFormData({...formData, birthDay: e.target.value})}
-                      className="w-full px-2 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500 text-sm"
-                    >
-                      <option value="">Gün</option>
-                      {Array.from({length: 31}, (_, i) => i + 1).map(day => (
-                        <option key={day} value={day}>{day}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="w-24">
-                    <select 
-                      value={formData.birthMonth}
-                      onChange={(e) => setFormData({...formData, birthMonth: e.target.value})}
-                      className="w-full px-2 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500 text-sm"
-                    >
-                      <option value="">Ay</option>
-                      {Array.from({length: 12}, (_, i) => i + 1).map(month => (
-                        <option key={month} value={month}>{month}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="w-24">
-                    <select 
-                      value={formData.birthYear}
-                      onChange={(e) => setFormData({...formData, birthYear: e.target.value})}
-                      className="w-full px-2 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500 text-sm"
-                    >
-                      <option value="">Yıl</option>
-                      {Array.from({length: 100}, (_, i) => new Date().getFullYear() - i).map(year => (
-                        <option key={year} value={year}>{year}</option>
-                      ))}
-                    </select>
+                {/* Cinsiyet */}
+                <div className="flex flex-col justify-end pb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Cinsiyet</label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="gender"
+                        value="male"
+                        checked={formData.gender === 'male'}
+                        onChange={(e) => setFormData({...formData, gender: e.target.value})}
+                        className="text-green-500 focus:ring-green-500"
+                      />
+                      <span>Erkek</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="gender"
+                        value="female"
+                        checked={formData.gender === 'female'}
+                        onChange={(e) => setFormData({...formData, gender: e.target.value})}
+                        className="text-green-500 focus:ring-green-500"
+                      />
+                      <span>Kadın</span>
+                    </label>
                   </div>
                 </div>
               </div>
 
-              {/* Cinsiyet */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">Cinsiyet</label>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="gender"
-                      value="male"
-                      checked={formData.gender === 'male'}
-                      onChange={(e) => setFormData({...formData, gender: e.target.value})}
-                      className="text-green-500 focus:ring-green-500"
-                    />
-                    <span>Erkek</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="gender"
-                      value="female"
-                      checked={formData.gender === 'female'}
-                      onChange={(e) => setFormData({...formData, gender: e.target.value})}
-                      className="text-green-500 focus:ring-green-500"
-                    />
-                    <span>Kadın</span>
-                  </label>
+              {/* E-posta */}
+              <div className="flex gap-4">
+                <div className="w-1/2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">E-Posta</label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    className="w-full px-3 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500"
+                    disabled
+                  />
                 </div>
               </div>
 

@@ -38,8 +38,9 @@ function PassengerForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
-      {/* Ad Soyad */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* 1. Satır: Ad, Soyad, TC Kimlik No */}
+      <div className="grid grid-cols-3 gap-6">
+        {/* Ad */}
         <div>
           <label className="block text-sm text-gray-600 mb-1">Ad</label>
           <input
@@ -50,6 +51,7 @@ function PassengerForm({
             required
           />
         </div>
+        {/* Soyad */}
         <div>
           <label className="block text-sm text-gray-600 mb-1">Soyad</label>
           <input
@@ -60,123 +62,129 @@ function PassengerForm({
             required
           />
         </div>
-      </div>
-
-      {/* TC Kimlik */}
-      <div>
-        <label className="block text-sm text-gray-600 mb-1">TC Kimlik No</label>
-        <input
-          type="text"
-          value={formData.identityNumber || ''}
-          onChange={(e) => setFormData({ ...formData, identityNumber: e.target.value })}
-          className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
-          maxLength={11}
-        />
-        <div className="mt-2">
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={formData.isForeigner}
-              onChange={(e) => setFormData({ ...formData, isForeigner: e.target.checked })}
-              className="w-4 h-4 rounded text-green-500 focus:ring-green-500/20"
-            />
-            <span className="text-sm text-gray-600">TC Vatandaşı Değil</span>
-          </label>
+        {/* TC Kimlik */}
+        <div>
+          <label className="block text-sm text-gray-600 mb-1">TC Kimlik No</label>
+          <input
+            type="text"
+            value={formData.identityNumber || ''}
+            onChange={(e) => setFormData({ ...formData, identityNumber: e.target.value })}
+            className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+            maxLength={11}
+          />
+          <div className="mt-2">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={formData.isForeigner}
+                onChange={(e) => setFormData({ ...formData, isForeigner: e.target.checked })}
+                className="w-4 h-4 rounded text-green-500 focus:ring-green-500/20"
+              />
+              <span className="text-sm text-gray-600">TC Vatandaşı Değil</span>
+            </label>
+          </div>
         </div>
       </div>
 
-      {/* Doğum Tarihi */}
-      <div>
-        <label className="block text-sm text-gray-600 mb-1">Doğum Tarihi</label>
-        <div className="grid grid-cols-3 gap-4">
-          <select
-            value={formData.birthDay}
-            onChange={(e) => setFormData({ ...formData, birthDay: e.target.value })}
-            className="px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
-            required
-          >
-            <option value="">Gün</option>
-            {days.map(day => (
-              <option key={day} value={day}>{day}</option>
-            ))}
-          </select>
-          <select
-            value={formData.birthMonth}
-            onChange={(e) => setFormData({ ...formData, birthMonth: e.target.value })}
-            className="px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
-            required
-          >
-            <option value="">Ay</option>
-            {months.map(month => (
-              <option key={month} value={month}>{month}</option>
-            ))}
-          </select>
-          <select
-            value={formData.birthYear}
-            onChange={(e) => setFormData({ ...formData, birthYear: e.target.value })}
-            className="px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
-            required
-          >
-            <option value="">Yıl</option>
-            {years.map(year => (
-              <option key={year} value={year}>{year}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Telefon */}
-      <div>
-        <label className="block text-sm text-gray-600 mb-1">Cep Telefonu</label>
-        <div className="grid grid-cols-6 gap-4">
-          <div className="col-span-2">
+      {/* 2. Satır: Doğum Tarihi, Ülke Kodu + Cep Telefonu, Cinsiyet */}
+      <div className="grid grid-cols-3 gap-8">
+        {/* Doğum Tarihi */}
+        <div>
+          <label className="block text-sm text-gray-600 mb-1">Doğum Tarihi</label>
+          <div className="flex gap-1 min-w-[220px]">
             <select
-              value={formData.countryCode}
-              onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
-              className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+              value={formData.birthDay}
+              onChange={(e) => setFormData({ ...formData, birthDay: e.target.value })}
+              className="w-12 h-11 px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm"
+              required
             >
-              <option value="+90">🇹🇷 +90</option>
-              <option value="+49">🇩🇪 +49</option>
-              <option value="+43">🇦🇹 +43</option>
-              <option value="+41">🇨🇭 +41</option>
+              <option value="">Gün</option>
+              {days.map(day => (
+                <option key={day} value={day}>{day}</option>
+              ))}
+            </select>
+            <select
+              value={formData.birthMonth}
+              onChange={(e) => setFormData({ ...formData, birthMonth: e.target.value })}
+              className="w-20 h-11 px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm"
+              required
+            >
+              <option value="">Ay</option>
+              {months.map(month => (
+                <option key={month} value={month}>{month}</option>
+              ))}
+            </select>
+            <select
+              value={formData.birthYear}
+              onChange={(e) => setFormData({ ...formData, birthYear: e.target.value })}
+              className="w-20 h-11 px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm"
+              required
+            >
+              <option value="">Yıl</option>
+              {years.map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
             </select>
           </div>
-          <div className="col-span-4">
-            <input
-              type="tel"
-              value={formData.phone || ''}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
-              placeholder="555 666 77 77"
-            />
+        </div>
+        {/* Ülke Kodu + Cep Telefonu */}
+        <div>
+          <div className="flex gap-6 items-end">
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Ülke Kodu</label>
+              <select
+                value={formData.countryCode}
+                onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
+                className="w-20 h-11 px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+              >
+                <option value="">Seç</option>
+                <option value="+90">+90</option>
+                <option value="+1">+1</option>
+                <option value="+44">+44</option>
+                <option value="+49">+49</option>
+                <option value="+33">+33</option>
+                <option value="+971">+971</option>
+                <option value="+20">+20</option>
+                <option value="+98">+98</option>
+              </select>
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm text-gray-600 mb-1">Cep Telefonu</label>
+              <input
+                type="tel"
+                value={formData.phone || ''}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="w-full h-11 px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+                placeholder="555 666 77 77"
+              />
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Cinsiyet */}
-      <div>
-        <label className="block text-sm text-gray-600 mb-2">Cinsiyet</label>
-        <div className="flex gap-4">
-          <label className="flex items-center gap-2">
-            <input
-              type="radio"
-              checked={formData.gender === 'male'}
-              onChange={() => setFormData({ ...formData, gender: 'male' })}
-              className="w-4 h-4 text-green-500 focus:ring-green-500/20"
-              required
-            />
-            <span className="text-gray-600">Erkek</span>
-          </label>
-          <label className="flex items-center gap-2">
-            <input
-              type="radio"
-              checked={formData.gender === 'female'}
-              onChange={() => setFormData({ ...formData, gender: 'female' })}
-              className="w-4 h-4 text-green-500 focus:ring-green-500/20"
-              required
-            />
-            <span className="text-gray-600">Kadın</span>
-          </label>
+        {/* Cinsiyet */}
+        <div className="flex flex-col justify-end pb-2">
+          <label className="block text-sm text-gray-600 mb-2">Cinsiyet</label>
+          <div className="flex gap-4">
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                checked={formData.gender === 'male'}
+                onChange={() => setFormData({ ...formData, gender: 'male' })}
+                className="w-4 h-4 text-green-500 focus:ring-green-500/20"
+                required
+              />
+              <span className="text-gray-600">Erkek</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                checked={formData.gender === 'female'}
+                onChange={() => setFormData({ ...formData, gender: 'female' })}
+                className="w-4 h-4 text-green-500 focus:ring-green-500/20"
+                required
+              />
+              <span className="text-gray-600">Kadın</span>
+            </label>
+          </div>
         </div>
       </div>
 
@@ -238,7 +246,7 @@ function PassengerForm({
       <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl text-sm text-gray-500">
         <div className="w-5 h-5 text-gray-400">ℹ️</div>
         <p>
-          gurbet.biz, kendi haricindeki yolcuların bilgilerini kaydeden kullanıcıların bu verileri kaydetmeye yetkili olduğunu, ilgili kişiyi bilgilendirdiğini ve onayını aldığını varsayar.
+          gurbetbiz, kendi haricindeki yolcuların bilgilerini kaydeden kullanıcıların bu verileri kaydetmeye yetkili olduğunu, ilgili kişiyi bilgilendirdiğini ve onayını aldığını varsayar.
         </p>
       </div>
 

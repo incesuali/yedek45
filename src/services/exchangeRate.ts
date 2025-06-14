@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-const API_KEY = process.env.NEXT_PUBLIC_EXCHANGE_RATE_API_KEY;
-const BASE_URL = 'https://api.exchangerate-api.com/v4/latest/EUR';
+const BASE_URL = '/api/euro-rate';
 
 export interface ExchangeRateResponse {
   rates: {
@@ -11,8 +10,8 @@ export interface ExchangeRateResponse {
 
 export async function getEuroRate(): Promise<number> {
   try {
-    const response = await axios.get<ExchangeRateResponse>(BASE_URL);
-    return response.data.rates.TRY;
+    const response = await axios.get(BASE_URL);
+    return response.data.rate;
   } catch (error) {
     console.error('Döviz kuru çekilirken hata oluştu:', error);
     return 44.50; // Hata durumunda varsayılan değer

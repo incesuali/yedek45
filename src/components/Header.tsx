@@ -13,7 +13,12 @@ export default function Header() {
   const [trend, setTrend] = useState<'up' | 'down' | 'same'>('same');
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const { data: session, status } = useSession();
+  const [userName, setUserName] = useState<string | null>(null);
   
+  if (session?.user) {
+    console.log('SESSION USER:', session.user);
+  }
+
   useEffect(() => {
     // İlk yüklenmede kuru çek
     updateRate();
@@ -25,6 +30,23 @@ export default function Header() {
       clearInterval(interval);
     };
   }, []);
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      fetch('/api/user/update')
+        .then(res => res.json())
+        .then(data => {
+          if (data.firstName && data.firstName.trim() !== '') {
+            setUserName(data.firstName);
+          } else if (data.email) {
+            setUserName(data.email.split('@')[0]);
+          } else {
+            setUserName('Kullanıcı');
+          }
+        })
+        .catch(() => setUserName('Kullanıcı'));
+    }
+  }, [status]);
 
   const updateRate = async () => {
     const newRate = await getEuroRate();
@@ -56,9 +78,7 @@ export default function Header() {
                     className="flex items-center gap-1 text-sm font-medium hover:text-gray-100 transition-colors"
                   >
                     <User className="w-5 h-5" />
-                    <span>{
-                      (session.user as any).firstName || session.user.name || session.user.email
-                    }</span>
+                    <span>{userName}</span>
                   </Link>
                   <button
                     onClick={() => signOut({ callbackUrl: '/' })}
