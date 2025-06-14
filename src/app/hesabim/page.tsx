@@ -1,37 +1,93 @@
 'use client';
 
-import { useState } from 'react';
-import Header from '@/components/Header';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
 import AccountSidebar from '@/components/AccountSidebar';
+import ChangePasswordModal from '@/components/ChangePasswordModal';
+import DeleteAccountModal from '@/components/DeleteAccountModal';
 
 export default function HesabimPage() {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    email: '',
+    email: 'test@gurbet.biz', // Sabit e-posta
     countryCode: '+90',
     phone: '',
     birthDay: '',
     birthMonth: '',
     birthYear: '',
     gender: '',
+    identityNumber: '',
     isForeigner: false,
     marketingConsent: false
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
+  const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
+
+  // Basit oturum kontrolü
+  useEffect(() => {
+    // Burada gerçek oturum kontrolü yapılacak
+    // Şimdilik simüle ediyoruz
+    const isLoggedIn = true; // localStorage.getItem('isLoggedIn') === 'true';
+    
+    if (!isLoggedIn) {
+      router.push('/');
+    }
+  }, [router]);
+
+  // Kullanıcı bilgilerini getir
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch('/api/user/update');
+        if (!response.ok) {
+          throw new Error('Kullanıcı bilgileri getirilemedi');
+        }
+        const data = await response.json();
+        setFormData(data);
+      } catch (error) {
+        console.error('Kullanıcı bilgileri getirme hatası:', error);
+        // Hata durumunda mevcut formData'yı koru
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Form gönderme işlemi
-    console.log(formData);
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/user/update', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Bir hata oluştu');
+      }
+
+      toast.success('Bilgileriniz başarıyla kaydedildi');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Bilgiler kaydedilirken bir hata oluştu');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <main className="min-h-screen bg-gray-50">
-<<<<<<< HEAD
-=======
-      <Header />
-      
->>>>>>> 6098fe3831dde8c733c4b0e464c7ef891ffef491
       <div className="container mx-auto px-4 py-8">
         <div className="flex gap-8">
           <AccountSidebar />
@@ -49,6 +105,7 @@ export default function HesabimPage() {
                     value={formData.firstName}
                     onChange={(e) => setFormData({...formData, firstName: e.target.value})}
                     className="w-full px-3 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500"
+                    required
                   />
                 </div>
                 <div>
@@ -58,14 +115,37 @@ export default function HesabimPage() {
                     value={formData.lastName}
                     onChange={(e) => setFormData({...formData, lastName: e.target.value})}
                     className="w-full px-3 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500"
+                    required
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">TC Kimlik No</label>
                   <input
                     type="text"
+                    value={formData.identityNumber}
+                    onChange={(e) => setFormData({...formData, identityNumber: e.target.value})}
                     className="w-full px-3 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500"
+                    maxLength={11}
+                    disabled={formData.isForeigner}
                   />
+                  <div className="mt-2">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={formData.isForeigner}
+                        onChange={(e) => {
+                          const isForeigner = e.target.checked;
+                          setFormData({
+                            ...formData,
+                            isForeigner,
+                            identityNumber: isForeigner ? '' : formData.identityNumber
+                          });
+                        }}
+                        className="rounded text-green-500 focus:ring-green-500"
+                      />
+                      <span className="text-sm text-gray-700">TC Vatandaşı Değil</span>
+                    </label>
+                  </div>
                 </div>
               </div>
 
@@ -79,6 +159,7 @@ export default function HesabimPage() {
                       value={formData.email}
                       onChange={(e) => setFormData({...formData, email: e.target.value})}
                       className="w-full px-3 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500"
+                      disabled
                     />
                   </div>
                   <div className="flex gap-2 w-1/2">
@@ -89,17 +170,25 @@ export default function HesabimPage() {
                         onChange={(e) => setFormData({...formData, countryCode: e.target.value})}
                         className="w-full px-1 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500 appearance-none text-sm"
                       >
+                        <option value="">Seç</option>
                         <option value="+90">+90</option>
+                        <option value="+1">+1</option>
+                        <option value="+44">+44</option>
+                        <option value="+49">+49</option>
+                        <option value="+33">+33</option>
+                        <option value="+971">+971</option>
+                        <option value="+20">+20</option>
+                        <option value="+98">+98</option>
                       </select>
                     </div>
                     <div className="flex-1">
                       <label className="block text-sm font-medium text-gray-700 mb-1">Cep Telefonu</label>
                       <input
-                        type="tel"
+                        type="text"
                         value={formData.phone}
                         onChange={(e) => setFormData({...formData, phone: e.target.value})}
                         className="w-full px-3 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500"
-                        placeholder="_ _ _  _ _ _  _ _ _ _"
+                        autoComplete="off"
                       />
                     </div>
                   </div>
@@ -173,79 +262,60 @@ export default function HesabimPage() {
                 </div>
               </div>
 
-              {/* TC Vatandaşı Değil */}
-              <div>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={formData.isForeigner}
-                    onChange={(e) => setFormData({...formData, isForeigner: e.target.checked})}
-                    className="rounded text-green-500 focus:ring-green-500"
-                  />
-                  <span className="text-sm text-gray-700">TC Vatandaşı Değil</span>
-                </label>
-              </div>
-
-              {/* Pasaport ve Mil Kart */}
-              <div className="flex gap-4">
-                <button
-                  type="button"
-                  className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50"
-                >
-                  <span className="text-sm">Pasaport Ekle</span>
-                </button>
-                <button
-                  type="button"
-                  className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50"
-                >
-                  <span className="text-sm">Mil Kart Ekle</span>
-                </button>
-              </div>
-
-              {/* Kampanya Onayı */}
-              <div>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={formData.marketingConsent}
-                    onChange={(e) => setFormData({...formData, marketingConsent: e.target.checked})}
-                    className="rounded text-green-500 focus:ring-green-500"
-                  />
-                  <span className="text-sm text-gray-700">
-                    İndirimler ve kampanyalardan
-                    <span className="font-medium"> Rıza Metni </span>
-                    kapsamında haberdar olmak istiyorum.
-                  </span>
-                </label>
-              </div>
-
-              {/* Alt Butonlar */}
+              {/* Butonlar */}
               <div className="flex justify-between items-center pt-4 border-t">
                 <div className="flex gap-4">
                   <button
                     type="button"
-                    className="px-4 py-2 text-sm text-blue-600 hover:text-blue-800"
+                    className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50"
                   >
-                    Hesap Sil
+                    <span className="text-sm">Pasaport Ekle</span>
                   </button>
                   <button
                     type="button"
-                    className="px-4 py-2 text-sm text-blue-600 hover:text-blue-800"
+                    className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50"
                   >
-                    Şifre Değiştir
+                    <span className="text-sm">Mil Kart Ekle</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsChangePasswordModalOpen(true)}
+                    className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50"
+                  >
+                    <span className="text-sm">Şifre Değiştir</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsDeleteAccountModalOpen(true)}
+                    className="flex items-center gap-2 px-4 py-2 border border-red-300 text-red-600 rounded-xl hover:bg-red-50"
+                  >
+                    <span className="text-sm">Hesabı Sil</span>
                   </button>
                 </div>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600"
+                  disabled={isLoading}
+                  className={`px-6 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 ${
+                    isLoading ? 'opacity-75 cursor-not-allowed' : ''
+                  }`}
                 >
-                  Kaydet
+                  {isLoading ? 'Kaydediliyor...' : 'Kaydet'}
                 </button>
               </div>
             </form>
           </div>
         </div>
       </div>
+
+      <ChangePasswordModal
+        isOpen={isChangePasswordModalOpen}
+        onClose={() => setIsChangePasswordModalOpen(false)}
+      />
+
+      <DeleteAccountModal
+        isOpen={isDeleteAccountModalOpen}
+        onClose={() => setIsDeleteAccountModalOpen(false)}
+      />
     </main>
   );
 } 

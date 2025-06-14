@@ -1,7 +1,20 @@
-<<<<<<< HEAD
 # GRBT - Gurbet.biz Web Uygulaması
 
 Modern Next.js tabanlı web uygulaması.
+
+## ⚠️ Geçici Çözümler ve Yapılması Gerekenler
+
+### Veritabanı Geçici Çözümü
+Şu anda PostgreSQL kurulumu tamamlanana kadar kullanıcı bilgileri geçici olarak JSON dosyasında saklanmaktadır:
+- Kullanıcı bilgileri `data/users.json` dosyasında tutulmaktadır
+- Bu geçici bir çözümdür ve production'da kullanılmamalıdır
+- PostgreSQL kurulumu tamamlandığında bu yapı kaldırılacaktır
+
+### Yapılması Gerekenler
+1. PostgreSQL kurulumu
+2. Prisma migration'larının oluşturulması
+3. Kullanıcı verilerinin PostgreSQL'e taşınması
+4. JSON dosya yapısının kaldırılması
 
 ## Geliştirme Ortamı
 
@@ -60,6 +73,8 @@ src/
   │   ├── Header.tsx        # Site header
   │   └── ...               # Diğer componentler
   └── styles/               # Global styles
+data/                      # Geçici JSON dosyaları (kaldırılacak)
+  └── users.json           # Kullanıcı bilgileri (geçici)
 ```
 
 ## Sık Karşılaşılan Sorunlar ve Çözümleri
@@ -98,7 +113,7 @@ MIT
 - Next.js: 13.5.6
 - React: 18.2.0
 - TypeScript: 5.0.4
-- PostgreSQL: 16
+- PostgreSQL: 16 (kurulum bekliyor)
 - Tailwind CSS: 3.3.5
 
 ## Node.js Sürüm Kontrolü
@@ -130,53 +145,126 @@ Bu proje Node.js 18.17.0 sürümüne sabitlenmiştir. Sürüm kontrolü 3 farkl�
 - nvm otomatik olarak 18.17.0'a geçiş yapar
 - npm install sırasında uyarı verir
 - npm run dev çalıştırıldığında hata verir
-=======
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
->>>>>>> 6098fe3831dde8c733c4b0e464c7ef891ffef491
 
-## Getting Started
+## Yolcu Bilgileri Yönetimi
 
-First, run the development server:
+### Veritabanı Şeması
+Yolcu bilgileri `Passenger` modeli ile yönetilmektedir:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```prisma
+model Passenger {
+  id              String    @id @default(cuid())
+  userId          String
+  firstName       String
+  lastName        String
+  identityNumber  String?
+  isForeigner     Boolean   @default(false)
+  birthDay        String
+  birthMonth      String
+  birthYear       String
+  gender          String
+  countryCode     String?
+  phone           String?
+  hasMilCard      Boolean   @default(false)
+  hasPassport     Boolean   @default(false)
+  passportNumber  String?
+  passportExpiry  DateTime?
+  milCardNumber   String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  status          String    @default("active")
+
+  user            User      @relation(fields: [userId], references: [id])
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### API Endpointleri
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Yolcu Listesi** - `GET /api/passengers`
+   - Oturum açmış kullanıcının yolcularını listeler
+   - Aktif durumdaki yolcuları getirir
+   - Oluşturulma tarihine göre sıralı
 
-<<<<<<< HEAD
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-=======
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
->>>>>>> 6098fe3831dde8c733c4b0e464c7ef891ffef491
+2. **Yolcu Ekleme** - `POST /api/passengers`
+   - Yeni yolcu kaydı oluşturur
+   - Zorunlu alanlar: ad, soyad, doğum tarihi, cinsiyet
+   - TC kimlik numarası validasyonu (11 hane)
 
-## Learn More
+3. **Yolcu Detayı** - `GET /api/passengers/[id]`
+   - Belirli bir yolcunun detaylarını getirir
+   - Yolcu ID ve kullanıcı kontrolü yapılır
 
-To learn more about Next.js, take a look at the following resources:
+4. **Yolcu Güncelleme** - `PUT /api/passengers/[id]`
+   - Mevcut yolcu bilgilerini günceller
+   - Tüm validasyonlar tekrar kontrol edilir
+   - Pasaport ve MilKart bilgileri opsiyonel
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+5. **Yolcu Silme** - `DELETE /api/passengers/[id]`
+   - Soft delete uygular (status = "deleted")
+   - Yolcu kaydı veritabanından silinmez
 
-<<<<<<< HEAD
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-=======
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
->>>>>>> 6098fe3831dde8c733c4b0e464c7ef891ffef491
+### Güvenlik Kontrolleri
 
-## Deploy on Vercel
+1. **Oturum Kontrolü**
+   - Tüm API endpointleri oturum kontrolü yapar
+   - `getServerSession` ile NextAuth.js entegrasyonu
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+2. **Veri Validasyonu**
+   - TC Kimlik numarası kontrolü (11 hane)
+   - Zorunlu alan kontrolleri
+   - Tarih formatı kontrolleri
 
-<<<<<<< HEAD
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
-=======
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
->>>>>>> 6098fe3831dde8c733c4b0e464c7ef891ffef491
+3. **Yetki Kontrolü**
+   - Her kullanıcı sadece kendi yolcularına erişebilir
+   - Yolcu-kullanıcı ilişkisi kontrol edilir
+
+### Kullanım Örneği
+
+```typescript
+// Yeni yolcu ekleme
+const response = await fetch('/api/passengers', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    firstName: 'Ahmet',
+    lastName: 'Yılmaz',
+    birthDay: '01',
+    birthMonth: '01',
+    birthYear: '1990',
+    gender: 'male',
+    identityNumber: '12345678901',
+    isForeigner: false
+  })
+});
+
+// Yolcu listesi alma
+const passengers = await fetch('/api/passengers').then(res => res.json());
+```
+
+### Hata Yönetimi
+
+- 400: Validasyon hataları
+- 401: Oturum hatası
+- 404: Yolcu bulunamadı
+- 500: Sunucu hatası
+
+Her hata durumu için detaylı hata mesajları döndürülür.
+
+## TODO / Yapılacaklar Listesi
+
+- [ ] Google ile Giriş (OAuth) ayarları tamamlanacak
+    - Google Cloud Console'da doğru redirect URI'ler eklenecek
+    - .env dosyasında GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET ve NEXTAUTH_URL doğru olacak
+    - Uygulama çalıştığı port ile birebir aynı URI kullanılacak
+- [ ] Facebook ile Giriş (OAuth) ayarları yapılacak
+    - Facebook Developers Console'da uygulama oluşturulacak
+    - Facebook Login > Settings kısmında Valid OAuth Redirect URIs olarak aşağıdakiler eklenecek:
+        - http://localhost:3002/api/auth/callback/facebook
+        - http://localhost:3003/api/auth/callback/facebook
+        - http://localhost:3004/api/auth/callback/facebook
+        - http://localhost:3005/api/auth/callback/facebook
+    - .env dosyasında FACEBOOK_CLIENT_ID ve FACEBOOK_CLIENT_SECRET doğru olacak
+    - Uygulama çalıştığı port ile birebir aynı URI kullanılacak
+- [ ] Diğer geliştirme başlıkları buraya eklenebilir
+
+> Not: Google veya Facebook ile girişte "redirect_uri_mismatch" hatası alınırsa, yukarıdaki adımlar tekrar kontrol edilmeli.

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { 
   User, 
   Plane, 
@@ -14,6 +14,8 @@ import {
   Heart,
   LogOut 
 } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { signOut } from 'next-auth/react';
 
 const menuItems = [
   { icon: User, label: 'Hesabım', href: '/hesabim' },
@@ -29,6 +31,11 @@ const menuItems = [
 
 export default function AccountSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    signOut({ callbackUrl: '/' });
+  };
 
   return (
     <div className="w-64 bg-white rounded-lg shadow-sm p-4">
@@ -54,7 +61,7 @@ export default function AccountSidebar() {
         <div className="my-4 border-t border-gray-200" />
 
         <button 
-          onClick={() => {/* Çıkış işlemi */}}
+          onClick={handleLogout}
           className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-50 w-full"
         >
           <LogOut className="w-5 h-5" />

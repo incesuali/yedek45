@@ -1,0 +1,22 @@
+[
+  {
+    "id": "1",
+    "firstName": "ali",
+    "lastName": "incesu",
+    "email": "test@gurbet.biz",
+    "countryCode": "+49",
+    "phone": "2323",
+    "birthDay": "2",
+    "birthMonth": "3",
+    "birthYear": "2018",
+    "gender": "male",
+    "identityNumber": "12121231212",
+    "isForeigner": false,
+    "marketingConsent": false,
+    "birthDate": "2018-03-02",
+    "createdAt": "2025-06-11T22:35:10.146Z",
+    "updatedAt": "2025-06-11T22:35:10.146Z",
+    "lastLoginAt": "2025-06-11T22:35:10.146Z",
+    "status": "active"
+  }
+]

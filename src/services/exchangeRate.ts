@@ -15,6 +15,6 @@ export async function getEuroRate(): Promise<number> {
     return response.data.rates.TRY;
   } catch (error) {
     console.error('Döviz kuru çekilirken hata oluştu:', error);
-    return 0;
+    return 44.50; // Hata durumunda varsayılan değer
   }
 } 
