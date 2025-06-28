@@ -1,29 +1,66 @@
 'use client';
 
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import AccountSidebar from '@/components/AccountSidebar';
 import { Bell, ArrowRight, Calendar, Trash2, Plus } from 'lucide-react';
 
 export default function AlarmlarPage() {
-  const alerts = [
-    {
-      id: 1,
-      from: 'İstanbul',
-      to: 'Ankara',
-      date: '15 Mart 2024',
-      targetPrice: '400 TL',
-      currentPrice: '450 TL',
-      status: 'active'
-    },
-    {
-      id: 2,
-      from: 'İzmir',
-      to: 'Antalya',
-      date: '20 Mart 2024',
-      targetPrice: '350 TL',
-      currentPrice: '380 TL',
-      status: 'active'
+  const { data: session, status } = useSession();
+  const [alerts, setAlerts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      fetchAlerts();
+    } else if (status === "unauthenticated") {
+      router.push("/giris");
     }
-  ];
+  }, [status]);
+
+  const fetchAlerts = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/price-alerts");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Bir hata oluştu");
+      setAlerts(data.alerts);
+    } catch (err: any) {
+      setError(err.message || "Bir hata oluştu");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Bu fiyat alarmını silmek istediğinize emin misiniz?")) return;
+    try {
+      const res = await fetch(`/api/price-alerts/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Silinemedi");
+      setAlerts(alerts.filter(a => a.id !== id));
+    } catch (err) {
+      alert("Silme işlemi başarısız oldu");
+    }
+  };
+
+  if (status === "loading") {
+    return (
+      <main className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex gap-8">
+            <AccountSidebar />
+            <div className="flex-1 bg-white rounded-lg shadow-sm p-6">
+              <div className="text-center py-8 text-gray-500">Yükleniyor...</div>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -38,6 +75,7 @@ export default function AlarmlarPage() {
                 <h1 className="text-2xl font-bold text-gray-800">Fiyat Alarmlarım</h1>
               </div>
               <button
+                onClick={() => router.push('/flights/search')}
                 className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" />
@@ -45,63 +83,77 @@ export default function AlarmlarPage() {
               </button>
             </div>
             
-            <div className="space-y-4">
-              {alerts.map((alert) => (
-                <div 
-                  key={alert.id}
-                  className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-8">
-                      <div className="flex items-center gap-3">
-                        <div className="flex flex-col">
-                          <span className="text-sm text-gray-500">Nereden</span>
-                          <span className="font-medium">{alert.from}</span>
+            {loading ? (
+              <div className="text-center py-8 text-gray-500">Yükleniyor...</div>
+            ) : error ? (
+              <div className="text-center py-8 text-red-500">{error}</div>
+            ) : alerts.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                Aktif fiyat alarmınız bulunmamaktadır.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {alerts.map((alert) => (
+                  <div 
+                    key={alert.id}
+                    className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-8">
+                        <div className="flex items-center gap-3">
+                          <div className="flex flex-col">
+                            <span className="text-sm text-gray-500">Nereden</span>
+                            <span className="font-medium">{alert.origin}</span>
+                          </div>
+                          <ArrowRight className="w-5 h-5 text-gray-400" />
+                          <div className="flex flex-col">
+                            <span className="text-sm text-gray-500">Nereye</span>
+                            <span className="font-medium">{alert.destination}</span>
+                          </div>
                         </div>
-                        <ArrowRight className="w-5 h-5 text-gray-400" />
+
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-5 h-5 text-gray-400" />
+                          <div className="flex flex-col">
+                            <span className="text-sm text-gray-500">Tarih</span>
+                            <span className="font-medium">
+                              {new Date(alert.departureDate).toLocaleDateString("tr-TR")}
+                            </span>
+                          </div>
+                        </div>
+
                         <div className="flex flex-col">
-                          <span className="text-sm text-gray-500">Nereye</span>
-                          <span className="font-medium">{alert.to}</span>
+                          <span className="text-sm text-gray-500">Hedef Fiyat</span>
+                          <span className="font-medium text-orange-600">
+                            {alert.targetPrice ? `${alert.targetPrice} EUR` : 'Belirtilmemiş'}
+                          </span>
+                        </div>
+
+                        <div className="flex flex-col">
+                          <span className="text-sm text-gray-500">Oluşturulma</span>
+                          <span className="font-medium text-sm">
+                            {new Date(alert.createdAt).toLocaleDateString("tr-TR")}
+                          </span>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <Calendar className="w-5 h-5 text-gray-400" />
-                        <div className="flex flex-col">
-                          <span className="text-sm text-gray-500">Tarih</span>
-                          <span className="font-medium">{alert.date}</span>
-                        </div>
+                        <button
+                          onClick={() => router.push(`/flights/search?from=${alert.origin}&to=${alert.destination}&date=${new Date(alert.departureDate).toISOString().split('T')[0]}`)}
+                          className="px-4 py-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                        >
+                          Uçuşları Gör
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(alert.id)}
+                          className="p-2 text-gray-600 hover:text-red-600 rounded-lg hover:bg-gray-100"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
                       </div>
-
-                      <div className="flex flex-col">
-                        <span className="text-sm text-gray-500">Hedef Fiyat</span>
-                        <span className="font-medium text-orange-600">{alert.targetPrice}</span>
-                      </div>
-
-                      <div className="flex flex-col">
-                        <span className="text-sm text-gray-500">Güncel Fiyat</span>
-                        <span className="font-medium">{alert.currentPrice}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        className="px-4 py-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                      >
-                        Uçuşları Gör
-                      </button>
-                      <button className="p-2 text-gray-600 hover:text-red-600 rounded-lg hover:bg-gray-100">
-                        <Trash2 className="w-5 h-5" />
-                      </button>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-
-            {alerts.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                Aktif fiyat alarmınız bulunmamaktadır.
+                ))}
               </div>
             )}
 

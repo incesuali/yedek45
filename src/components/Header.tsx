@@ -1,110 +1,72 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { User, TrendingDown } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { getEuroRate } from '@/services/exchangeRate';
-import LoginModal from './LoginModal';
-import LanguageDropdown from './LanguageDropdown';
 import { useSession, signOut } from 'next-auth/react';
+import { User, LogOut, TrendingDown } from 'lucide-react';
+import LanguageDropdown from './LanguageDropdown';
+import LoginModal from './LoginModal';
+import { getEuroRate } from '@/services/exchangeRate';
 
 export default function Header() {
-  const [rate, setRate] = useState<number>(0);
-  const [trend, setTrend] = useState<'up' | 'down' | 'same'>('same');
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const { data: session, status } = useSession();
-  const [userName, setUserName] = useState<string | null>(null);
-  
-  if (session?.user) {
-    console.log('SESSION USER:', session.user);
-  }
+    const { data: session, status } = useSession();
+    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+    const [euroRate, setEuroRate] = useState<number | null>(null);
 
-  useEffect(() => {
-    // İlk yüklenmede kuru çek
-    updateRate();
+    useEffect(() => {
+        const fetchRate = async () => {
+            const rate = await getEuroRate();
+            setEuroRate(rate);
+        };
+        fetchRate();
+    }, []);
 
-    // Her 5 dakikada bir güncelle
-    const interval = setInterval(updateRate, 5 * 60 * 1000);
-
-    return () => {
-      clearInterval(interval);
+    const handleLogout = () => {
+        signOut({ callbackUrl: '/' });
     };
-  }, []);
 
-  useEffect(() => {
-    if (status === 'authenticated') {
-      fetch('/api/user/update')
-        .then(res => res.json())
-        .then(data => {
-          if (data.firstName && data.firstName.trim() !== '') {
-            setUserName(data.firstName);
-          } else if (data.email) {
-            setUserName(data.email.split('@')[0]);
-          } else {
-            setUserName('Kullanıcı');
-          }
-        })
-        .catch(() => setUserName('Kullanıcı'));
-    }
-  }, [status]);
+    return (
+        <>
+            <header className="bg-green-500 text-white relative z-50">
+                <div className="px-4">
+                    <div className="flex justify-between items-center py-3.5">
+                        <div className="flex items-center gap-2">
+                             <Link href="/" className="flex items-baseline mr-4">
+                                <span className="text-[17px] font-bold text-white">gurbet</span>
+                                <span className="text-[17px] font-bold text-black">biz</span>
+                            </Link>
+                            {euroRate !== null && (
+                                <>
+                                    <TrendingDown className="w-5 h-5 transition-transform " />
+                                    <span className="text-sm font-medium">DÖVİZ € = {euroRate.toFixed(2)} TL</span>
+                                </>
+                            )}
+                        </div>
 
-  const updateRate = async () => {
-    const newRate = await getEuroRate();
-    setTrend(newRate > rate ? 'up' : newRate < rate ? 'down' : 'same');
-    setRate(newRate);
-  };
-
-  return (
-    <>
-      <header className="bg-green-500 text-white">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center py-3.5">
-            <div className="flex items-center gap-2">
-              <Link href="/" className="flex items-baseline mr-4">
-                <span className="text-[17px] font-bold text-white">gurbet</span>
-                <span className="text-[17px] font-bold text-black">biz</span>
-              </Link>
-              <TrendingDown className={`w-5 h-5 transition-transform ${trend === 'up' ? 'rotate-180' : ''}`} />
-              <span className="text-sm font-medium">
-                DÖVİZ € = {rate.toFixed(2)} TL
-              </span>
-            </div>
-            <div className="flex items-center gap-6">
-              <LanguageDropdown />
-              {status === 'authenticated' && session?.user ? (
-                <>
-                  <Link 
-                    href="/hesabim"
-                    className="flex items-center gap-1 text-sm font-medium hover:text-gray-100 transition-colors"
-                  >
-                    <User className="w-5 h-5" />
-                    <span>{userName}</span>
-                  </Link>
-                  <button
-                    onClick={() => signOut({ callbackUrl: '/' })}
-                    className="ml-2 text-sm text-white underline hover:text-gray-200"
-                  >
-                    Çıkış
-                  </button>
-                </>
-              ) : (
-                <button 
-                  onClick={() => setIsLoginModalOpen(true)}
-                  className="flex items-center gap-1 text-sm font-medium hover:text-gray-100 transition-colors"
-                >
-                  <User className="w-5 h-5" />
-                  <span>Giriş yap</span>
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <LoginModal 
-        isOpen={isLoginModalOpen} 
-        onClose={() => setIsLoginModalOpen(false)} 
-      />
-    </>
-  );
+                        <div className="flex items-center gap-6">
+                            <LanguageDropdown />
+                            {status === 'authenticated' ? (
+                                <div className="flex items-center gap-4">
+                                    <Link href="/hesabim" className="flex items-center gap-1 text-sm font-medium hover:text-gray-100 transition-colors">
+                                        <User className="w-5 h-5" />
+                                        <span>Hesabım</span>
+                                    </Link>
+                                    <button onClick={handleLogout} className="flex items-center gap-1 text-sm font-medium hover:text-gray-100 transition-colors">
+                                        <LogOut className="w-5 h-5" />
+                                        <span>Çıkış Yap</span>
+                                    </button>
+                                </div>
+                            ) : (
+                                <button onClick={() => setIsLoginModalOpen(true)} className="flex items-center gap-1 text-sm font-medium hover:text-gray-100 transition-colors">
+                                    <User className="w-5 h-5" />
+                                    <span>Giriş yap</span>
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </header>
+            {isLoginModalOpen && <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />}
+        </>
+    );
 }

@@ -32,6 +32,8 @@ model User {
   status        String    @default("active")
   role          String    @default("user") // "admin" veya "user"
   canDelete     Boolean   @default(true)
+  priceAlerts   PriceAlert[]
+  searchFavorites SearchFavorite[]
 
   // İlişkiler
   accounts      Account[]
@@ -133,4 +135,26 @@ model Passenger {
 
   @@unique([userId, identityNumber])
   @@index([userId])
+}
+
+model PriceAlert {
+  id            String   @id @default(cuid())
+  userId        String
+  origin        String
+  destination   String
+  departureDate DateTime
+  targetPrice   Float?
+  lastNotifiedPrice Float?
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id])
+}
+
+model SearchFavorite {
+  id            String   @id @default(cuid())
+  userId        String
+  origin        String
+  destination   String
+  departureDate DateTime
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id])
 } 

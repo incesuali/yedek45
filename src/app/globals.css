@@ -26,3 +26,14 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+input[type="radio"]:checked {
+  accent-color: #22c55e;
+}
+
+/* DayPicker iki ayı yan yana zorla */
+.rdp-multiple_months {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 2rem;
+}
