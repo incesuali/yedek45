@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import Header from '@/components/Header';
-import { getReservationByPNR, cancelBooking, getOrderRouteAirRulesBiletDukkaniReal, cancelOrderBiletDukkaniReal, refundValidateBiletDukkaniReal } from '@/services/flightApi';
+// import { getReservationByPNR, getOrderRouteAirRulesBiletDukkaniReal, cancelOrderBiletDukkaniReal, refundValidateBiletDukkaniReal } from '@/services/flightApi'; // TODO: getReservationByPNR fonksiyonu gerçek API entegrasyonu tamamlandığında aktif edilecek.
 import { PlaneTakeoff, User, Calendar, XCircle, AlertTriangle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import { getOrderRouteAirRulesBiletDukkaniReal, cancelOrderBiletDukkaniReal, refundValidateBiletDukkaniReal } from '@/services/flightApi';
 
 export default function BiletIptalPage() {
   const [pnr, setPnr] = useState('');
@@ -31,11 +32,10 @@ export default function BiletIptalPage() {
     setAirRulesError('');
     setAirRulesLoading(true);
     try {
-      const result = await getReservationByPNR(pnr, lastName);
-      setReservation(result);
+      // const result = await getReservationByPNR(pnr, lastName); // TODO: getReservationByPNR fonksiyonu gerçek API entegrasyonu tamamlandığında aktif edilecek.
       // Demo amaçlı sabit token ve id'ler, gerçek API'de dinamik alınacak
       const token = 'DEMO_TOKEN';
-      const rules = await getOrderRouteAirRulesBiletDukkaniReal(result.orderId || 'demo-order-id', result.routeId || 'demo-route-id', token);
+      const rules = await getOrderRouteAirRulesBiletDukkaniReal(reservation.orderId || 'demo-order-id', reservation.routeId || 'demo-route-id', token);
       setAirRules(rules);
     } catch (err: any) {
       setError(err.message || 'Rezervasyon bulunamadı.');

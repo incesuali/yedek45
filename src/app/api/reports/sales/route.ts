@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSalesReportBiletDukkani } from '@/src/services/biletdukkaniSalesReport';
+import { getSalesReportBiletDukkani } from '@/services/biletdukkaniSalesReport';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);

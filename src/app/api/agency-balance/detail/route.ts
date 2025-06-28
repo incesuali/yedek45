@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAgencyBalanceBiletDukkani } from '@/src/services/biletdukkaniAgencyBalance';
+import { getAgencyBalanceBiletDukkani } from '@/services/biletdukkaniAgencyBalance';
 
 export async function GET(req: Request) {
   const token = process.env.BILETDUKKANI_TOKEN || undefined;

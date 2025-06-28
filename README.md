@@ -94,6 +94,61 @@ data/                      # Geçici JSON dosyaları (kaldırılacak)
    - Props drilling'den kaçının
    - Context API'yi dikkatli kullanın
 
+## [YAPILAN DEĞİŞİKLİKLER]
+### Import Path (Yol) Düzeltmeleri ve Modül Çözümleme Hatalarının Giderilmesi
+
+#### Amaç:
+VS Code ve TypeScript'te görülen "Cannot find module" ve kırmızı dosya noktası hatalarını gidermek, import path aliaslarının (yol takma adlarının) projenin tsconfig.json ayarlarına uygun şekilde kullanılmasını sağlamak.
+
+#### Yapılanlar:
+1. **Import Path Düzeltmeleri:**
+   - Tüm dosyalarda `@/src/services/...` şeklindeki importlar, `@/services/...` olarak değiştirildi.
+   - Aynı şekilde, `@/src/components/...` → `@/components/...` ve benzeri tüm `@/src/` ile başlayan yollar düzeltildi.
+   - Bu değişiklik, projenin kökünde yer alan `tsconfig.json` dosyasındaki aşağıdaki ayara uygun olarak yapıldı:
+     ```json
+     "paths": {
+       "@/*": ["./src/*"]
+     }
+     ```
+   - Artık tüm importlar, `@/` ile başlayıp doğrudan `src` altındaki klasöre işaret edecek şekilde olmalı.
+
+2. **Hata Kaynakları ve Çözüm:**
+   - VS Code'da ve terminalde görülen "Cannot find module ..." hataları, yanlış import path'lerinden kaynaklanıyordu.
+   - Doğru alias kullanımı ile bu hatalar giderildi.
+   - Bu değişiklikler sonrası, dosya ve klasörler üzerinde kırmızı hata noktaları kaybolacak.
+
+3. **Ek Notlar:**
+   - Eğer ileride yeni bir klasör veya dosya eklenirse, import path'lerinde mutlaka `@/` ile başlayıp, `src`'yi tekrar yazmadan doğrudan alt klasöre işaret edilmeli.
+   - Örnek:  
+     ```ts
+     // Yanlış: 
+     import X from '@/src/components/X';
+     // Doğru:
+     import X from '@/components/X';
+     ```
+
+4. **Ekstra Kontrol:**
+   - Değişiklik sonrası, projenin tamamı derlenip, VS Code'da "Reload Window" yapılmalı.
+   - Hala hata varsa, `tsconfig.json` ve import path'leri tekrar gözden geçirilmeli.
+
+### Import Path Düzeltme Kayıtları (2024-06-29)
+
+Aşağıdaki dosyalarda sadece import path düzeltmesi yapılmıştır. Her dosyada sadece ilgili import satırı değiştirilmiş, başka hiçbir kod değiştirilmemiştir.
+
+1. src/app/api/agency-balance/detail/route.ts
+   - import { getAgencyBalanceBiletDukkani } from '@/src/services/biletdukkaniAgencyBalance';
+     → import { getAgencyBalanceBiletDukkani } from '@/services/biletdukkaniAgencyBalance';
+
+2. src/app/api/reports/sales/route.ts
+   - import { getSalesReportBiletDukkani } from '@/src/services/biletdukkaniSalesReport';
+     → import { getSalesReportBiletDukkani } from '@/services/biletdukkaniSalesReport';
+
+3. src/app/api/lookups/providers/route.ts
+   - import { getProvidersBiletDukkani } from '@/src/services/biletdukkaniProviders';
+     → import { getProvidersBiletDukkani } from '@/services/biletdukkaniProviders';
+
+Bu düzeltmeler, VS Code ve TypeScript'te yaşanan modül çözümleme ve kırmızı dosya noktası hatalarını gidermek için yapılmıştır.
+
 ## Deployment
 
 ```bash
@@ -692,3 +747,20 @@ const orderResult = await createOrderBiletDukkaniReal({
 - tommy_conversation.md: Projede aktif olarak kullanılmadığı için silindi. Yedeği Mac'in masaüstüne (Desktop/tommy_conversation.md.yedek) alındı.
 - mae_yedek_22/: Projede aktif olarak kullanılmadığı için silindi. Yedeği Mac'in masaüstüne (Desktop/mae_yedek_22_backup) alındı.
 - .DS_Store: macOS sistem dosyası, proje için gereksiz. .gitignore'da zaten mevcut olduğu için silindi.
+
+### Son Yapılan Düzeltmeler ve Notlar (2024-06-29)
+
+1. **bilet-iptal/page.tsx dosyasında cancelBooking fonksiyonu kaldırıldı:**
+   - Import satırından `cancelBooking` fonksiyonu silindi.
+   - Gerekçe: Projede ve BiletDukkani API'de böyle bir fonksiyon yok, yanlışlıkla eklenmişti.
+
+2. **bilet-iptal/page.tsx dosyasında getReservationByPNR fonksiyonu gerçek API hazırlığı için yorum satırı yapıldı:**
+   - Import satırında ve kodda kullanımı `//` ile yorum satırı haline getirildi.
+   - Yanına şu not eklendi: `// TODO: getReservationByPNR fonksiyonu gerçek API entegrasyonu tamamlandığında aktif edilecek.`
+   - Gerekçe: Bu fonksiyon henüz projede yok, gerçek API geldiğinde tekrar aktif edilecek.
+
+3. **Tüm import path düzeltmeleri ve yapılanlar adım adım kaydedildi:**
+   - `@/src/` ile başlayan tüm import path'leri `@/` ile düzeltildi.
+   - Hangi dosyada ne değiştiği, yapılan değişiklikler bölümünde ve burada detaylıca kaydedildi.
+
+Bu notlar, kodun sürdürülebilirliği ve ileride yapılacak entegrasyonlar için referans olarak eklenmiştir.
