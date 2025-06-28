@@ -690,3 +690,5 @@ const orderResult = await createOrderBiletDukkaniReal({
 - tailwind.config.ts: Projede aktif olarak kullanılmadığı için silindi. Yedeği Mac'in masaüstüne (Desktop/tailwind.config.ts.yedek) alındı.
 - temp_backup_page.tsx: Projede aktif olarak kullanılmadığı için silindi. Yedeği Mac'in masaüstüne (Desktop/temp_backup_page.tsx.yedek) alındı.
 - tommy_conversation.md: Projede aktif olarak kullanılmadığı için silindi. Yedeği Mac'in masaüstüne (Desktop/tommy_conversation.md.yedek) alındı.
+- mae_yedek_22/: Projede aktif olarak kullanılmadığı için silindi. Yedeği Mac'in masaüstüne (Desktop/mae_yedek_22_backup) alındı.
+- .DS_Store: macOS sistem dosyası, proje için gereksiz. .gitignore'da zaten mevcut olduğu için silindi.

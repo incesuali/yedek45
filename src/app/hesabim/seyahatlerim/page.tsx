@@ -5,8 +5,6 @@ import AccountSidebar from '@/components/AccountSidebar';
 import { PlaneTakeoff, Building, Car, Wifi, Briefcase } from 'lucide-react';
 import { getAirlineCheckInUrl } from '@/utils/airlines';
 import { getOrderRouteTicketsBiletDukkaniDemo, getOrderRouteAirRulesBiletDukkaniReal } from '@/services/flightApi';
-import { getAirlines } from '@/services/airlineApi';
-import { Airline } from '@/types/airline';
 
 type Passenger = {
   name: string;
@@ -55,7 +53,7 @@ export default function SeyahatlerimPage() {
         { name: 'Ali İncesu', type: 'Yetişkin' },
         { name: 'Ayşe Yılmaz', type: 'Yetişkin' }
       ],
-      price: '135 EUR',
+      price: '4.500 TL',
       status: 'Onaylandı',
       reservationNo: 'HTL987654',
       payment: 'Kredi Kartı',
@@ -78,7 +76,7 @@ export default function SeyahatlerimPage() {
         { name: 'Ali İncesu', type: 'Yetişkin' },
         { name: 'Ayşe Yılmaz', type: 'Yetişkin' }
       ],
-      price: '63 EUR',
+      price: '3.500 TL',
       status: 'Onaylandı',
       reservationNo: 'HTL987655',
       payment: 'Kredi Kartı',
@@ -104,7 +102,7 @@ export default function SeyahatlerimPage() {
       dropoffCity: 'Ankara',
       dropoffDate: '2024-09-05',
       dropoffTime: '14:00',
-      price: '63 EUR',
+      price: '2.100 TL',
       status: 'Onaylandı',
       reservationNo: 'CAR456789',
       payment: 'Kredi Kartı',
@@ -119,7 +117,6 @@ export default function SeyahatlerimPage() {
   const [airRules, setAirRules] = useState<{ [flightId: string]: any[] }>({});
   const [airRulesLoading, setAirRulesLoading] = useState<string | null>(null);
   const [airRulesError, setAirRulesError] = useState<string | null>(null);
-  const [airlinesList, setAirlinesList] = useState<Airline[]>([]);
 
   // Tarih formatını Türk formatına çeviren fonksiyon
   const formatDate = (dateString: string) => {
@@ -176,10 +173,6 @@ export default function SeyahatlerimPage() {
     fetchTickets();
   }, []);
 
-  useEffect(() => {
-    getAirlines().then(setAirlinesList);
-  }, []);
-
   const handleOpenDetail = async (flight: any) => {
     if (openDetailId === flight.id) {
       setOpenDetailId(null);
@@ -211,21 +204,12 @@ export default function SeyahatlerimPage() {
         <div className="space-y-4">
           {flightReservations.map(flight => {
             const checkInUrl = getAirlineCheckInUrl(flight.airline);
-            // IATA kodunu ayır (ör: TK123 -> TK)
-            const iataCode = (flight.airline || '').substring(0, 2).toUpperCase();
-            const airlineObj = airlinesList.find((a: Airline) => a.code.toUpperCase() === iataCode);
             return (
               <div key={flight.id} className="border rounded-xl p-4 bg-gray-50">
                 <div className="flex justify-between items-center">
                   <div>
-                    <div className="font-bold text-lg flex items-center gap-2">
-                      {airlineObj?.logoUrl && (
-                        <img src={airlineObj.logoUrl} alt={airlineObj.name} className="h-6 w-6 object-contain" />
-                      )}
-                      {airlineObj?.name || iataCode}
-                    </div>
-                    <div className="text-sm text-gray-600">{flight.from} → {flight.to}</div>
-                    <div className="text-sm text-gray-600">{formatDate(flight.date)} • {flight.time}{flight.arrivalTime ? ` - ${flight.arrivalTime}` : ""}</div>
+                    <div className="font-bold text-lg">{flight.from} → {flight.to}</div>
+                    <div className="text-sm text-gray-600">{formatDate(flight.date)} • {flight.time}{flight.arrivalTime ? ` - ${flight.arrivalTime}` : ""} • {flight.airline}</div>
                     <div className="text-sm text-gray-500 mt-1">PNR: {flight.pnr}</div>
                     <div className="text-sm text-gray-500">Yolcu: {flight.passengers.map(p => p.name).join(', ')}</div>
                   </div>
