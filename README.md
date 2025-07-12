@@ -764,3 +764,65 @@ const orderResult = await createOrderBiletDukkaniReal({
    - Hangi dosyada ne değiştiği, yapılan değişiklikler bölümünde ve burada detaylıca kaydedildi.
 
 Bu notlar, kodun sürdürülebilirliği ve ileride yapılacak entegrasyonlar için referans olarak eklenmiştir.
+
+## Mobil Görünüm
+
+Mobil tasarımda ana referans genişliği olarak **375px** (iPhone X/11/12/13/14) kullanılır. Tasarım ve geliştirme mobil-first yaklaşımıyla yapılır. 320px (en küçük), 414px ve 430px (en büyük) gibi ekranlarda da test edilir ve gerekirse küçük düzeltmeler eklenir. Responsive utility sınıfları (ör. Tailwind) ile farklı boyutlarda uyumluluk sağlanır. Tüm mobil geliştirme bu prensiplere göre yapılacaktır.
+
+## Çoklu Havaalanı ve Kombinasyonlu Uçuş Arama (2024-07-04)
+
+### Amaç
+Kullanıcıların kalkış ve varış için birden fazla havaalanı seçebilmesi ve sistemin bu seçimler arasında tüm olası kombinasyonlarla uygun uçuşları bulabilmesi.
+
+### Yapılanlar (Frontend)
+- Kalkış ve varış için çoklu seçimli chip/tag input geliştirildi.
+- Kullanıcı en fazla 3 kalkış ve 3 varış havaalanı seçebiliyor.
+- Seçilen havaalanları kutucuk (chip/tag) olarak gösteriliyor ve silinebiliyor.
+- Arama butonuna basınca, seçilen tüm kalkış ve varış kodları alınarak API'ye gönderiliyor.
+- (Multi-leg değil, paralel kombinasyon araması!)
+
+### Gereksinimler (Backend)
+- API, birden fazla kalkış ve varış kodunu alabilmeli.
+- Tüm kombinasyonlar için uygun uçuşları dönebilmeli.
+- Eğer multi-leg (çoklu bacak) desteği istenirse, aşağıdaki gibi bir payload ile POST yapılmalı:
+
+```json
+{
+  "adults": 2,
+  "children": 1,
+  "infants": 0,
+  "students": 0,
+  "disabledPersons": 0,
+  "providers": "THY",
+  "airlines": "TK,AJ",
+  "cabin": "Economy",
+  "stop": 1,
+  "luggage": 1,
+  "routes": [
+    {
+      "index": "0",
+      "originCode": "AYT",
+      "originType": "airport",
+      "destinationCode": "SAW",
+      "destinationType": "airport",
+      "departDate": "01.19.2021"
+    },
+    {
+      "index": "1",
+      "originCode": "IST",
+      "originType": "airport",
+      "destinationCode": "ESB",
+      "destinationType": "airport",
+      "departDate": "02.11.2021"
+    }
+  ]
+}
+```
+- Sadece paralel kombinasyon araması için, frontend seçilen kalkış ve varış kodlarının tüm kombinasyonlarını üretip, her biri için bir route objesi oluşturup gönderebilir.
+
+### Notlar
+- Frontend ve backend arasında parametre formatı (virgülle ayrılmış string mi, array mi?) netleştirilmeli.
+- API dokümanında çoklu kod desteği olup olmadığı kontrol edilmeli.
+- Gerekirse backend ekibiyle iletişime geçilmeli.
+
+---

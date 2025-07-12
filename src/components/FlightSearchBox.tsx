@@ -37,8 +37,10 @@ export default function FlightSearchBox({
   onSubmit,
 }: FlightSearchBoxProps) {
   const [tripType, setTripType] = useState(initialTripType);
-  const [fromAirport, setFromAirport] = useState(initialOrigin);
-  const [toAirport, setToAirport] = useState(initialDestination);
+  const [fromAirports, setFromAirports] = useState<Airport[]>([]);
+  const [toAirports, setToAirports] = useState<Airport[]>([]);
+  const [fromInput, setFromInput] = useState('');
+  const [toInput, setToInput] = useState('');
   const [departureDate, setDepartureDate] = useState<Date | undefined>(initialDepartureDate ? new Date(initialDepartureDate) : undefined);
   const [returnDate, setReturnDate] = useState<Date | undefined>(initialReturnDate ? new Date(initialReturnDate) : undefined);
   const [fromSuggestions, setFromSuggestions] = useState<Airport[]>([]);
@@ -66,37 +68,13 @@ export default function FlightSearchBox({
     }
   };
 
-  const handleFromChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setFromAirport(value);
-    setShowFromSuggestions(true);
-    handleAirportSearch(value, setFromSuggestions);
-  };
-
-  const handleToChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setToAirport(value);
-    setShowToSuggestions(true);
-    handleAirportSearch(value, setToSuggestions);
-  };
-
-  const handleSelectFrom = (airport: Airport) => {
-    setFromAirport(`${airport.code} - ${airport.name}`);
-    setShowFromSuggestions(false);
-  };
-
-  const handleSelectTo = (airport: Airport) => {
-    setToAirport(`${airport.code} - ${airport.name}`);
-    setShowToSuggestions(false);
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fromAirport || !toAirport || !departureDate) return;
+    if (!fromAirports.length || !toAirports.length || !departureDate) return;
     setIsLoading(true);
     onSubmit({
-      origin: fromAirport,
-      destination: toAirport,
+      origin: fromAirports.map(a => a.code).join(', '),
+      destination: toAirports.map(a => a.code).join(', '),
       tripType,
       departureDate: departureDate.toISOString().slice(0, 10),
       returnDate: tripType === 'roundTrip' && returnDate ? returnDate.toISOString().slice(0, 10) : undefined,
@@ -107,27 +85,46 @@ export default function FlightSearchBox({
 
   return (
     <div className="w-full">
-      <form onSubmit={handleSubmit} className="bg-white rounded-[32px] shadow-lg p-4 border border-gray-200 flex flex-row flex-nowrap gap-4 items-end w-full">
+      <form onSubmit={handleSubmit} className="bg-white rounded-md shadow-lg p-4 border border-gray-200 flex flex-row flex-nowrap gap-4 items-end w-full">
         {/* Nereden */}
         <div className="flex flex-col min-w-[130px] flex-shrink-0 flex-grow-0">
           <label className="text-xs text-green-700 mb-1 ml-1 font-medium">Nereden</label>
           <div className="relative flex-1">
             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Nereden"
-              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-l-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-              value={fromAirport}
-              onChange={handleFromChange}
-              onFocus={() => setShowFromSuggestions(true)}
-            />
+            <div className="flex flex-wrap items-center gap-1 pl-10 pr-4 py-3 border border-gray-200 rounded-l-lg focus-within:ring-2 focus-within:ring-green-500 focus-within:border-transparent outline-none bg-white min-h-[44px]">
+              {fromAirports.map((airport, idx) => (
+                <span key={airport.code} className="flex items-center bg-green-100 text-green-800 rounded px-2 py-0.5 text-xs mr-1">
+                  {airport.code}
+                  <button type="button" className="ml-1 text-green-700 hover:text-red-500" onClick={() => setFromAirports(fromAirports.filter((a, i) => i !== idx))}>&times;</button>
+                </span>
+              ))}
+              {fromAirports.length < 3 && (
+                <input
+                  type="text"
+                  value={fromInput}
+                  onChange={e => {
+                    setFromInput(e.target.value);
+                    setShowFromSuggestions(true);
+                    handleAirportSearch(e.target.value, setFromSuggestions);
+                  }}
+                  onFocus={() => setShowFromSuggestions(true)}
+                  placeholder="Nereden"
+                  className="outline-none border-none text-sm bg-transparent min-w-[60px] flex-1"
+                />
+              )}
+            </div>
             {showFromSuggestions && fromSuggestions.length > 0 && (
               <ul className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg mt-1 max-h-60 overflow-y-auto shadow-lg">
                 {fromSuggestions.map(airport => (
                   <li
                     key={airport.code}
                     className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                    onMouseDown={() => handleSelectFrom(airport)}
+                    onMouseDown={() => {
+                      if (fromAirports.find(a => a.code === airport.code) || fromAirports.length >= 3) return;
+                      setFromAirports([...fromAirports, airport]);
+                      setFromInput('');
+                      setShowFromSuggestions(false);
+                    }}
                   >
                     {airport.name} ({airport.code})
                   </li>
@@ -141,21 +138,40 @@ export default function FlightSearchBox({
           <label className="text-xs text-green-700 mb-1 ml-1 font-medium">Nereye</label>
           <div className="relative flex-1">
             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Nereye"
-              className="w-full pl-10 pr-4 py-3 border-y border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-              value={toAirport}
-              onChange={handleToChange}
-              onFocus={() => setShowToSuggestions(true)}
-            />
+            <div className="flex flex-wrap items-center gap-1 pl-10 pr-4 py-3 border-y border-gray-200 focus-within:ring-2 focus-within:ring-green-500 focus-within:border-transparent outline-none bg-white min-h-[44px]">
+              {toAirports.map((airport, idx) => (
+                <span key={airport.code} className="flex items-center bg-green-100 text-green-800 rounded px-2 py-0.5 text-xs mr-1">
+                  {airport.code}
+                  <button type="button" className="ml-1 text-green-700 hover:text-red-500" onClick={() => setToAirports(toAirports.filter((a, i) => i !== idx))}>&times;</button>
+                </span>
+              ))}
+              {toAirports.length < 3 && (
+                <input
+                  type="text"
+                  value={toInput}
+                  onChange={e => {
+                    setToInput(e.target.value);
+                    setShowToSuggestions(true);
+                    handleAirportSearch(e.target.value, setToSuggestions);
+                  }}
+                  onFocus={() => setShowToSuggestions(true)}
+                  placeholder="Nereye"
+                  className="outline-none border-none text-sm bg-transparent min-w-[60px] flex-1"
+                />
+              )}
+            </div>
             {showToSuggestions && toSuggestions.length > 0 && (
               <ul className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg mt-1 max-h-60 overflow-y-auto shadow-lg">
                 {toSuggestions.map(airport => (
                   <li
                     key={airport.code}
                     className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                    onMouseDown={() => handleSelectTo(airport)}
+                    onMouseDown={() => {
+                      if (toAirports.find(a => a.code === airport.code) || toAirports.length >= 3) return;
+                      setToAirports([...toAirports, airport]);
+                      setToInput('');
+                      setShowToSuggestions(false);
+                    }}
                   >
                     {airport.name} ({airport.code})
                   </li>
@@ -168,11 +184,11 @@ export default function FlightSearchBox({
         <div className="flex flex-col min-w-[130px] flex-shrink-0 flex-grow-0">
           <label className="text-xs text-green-700 mb-1 ml-1 font-medium">Gidiş Tarihi</label>
           <div className="relative w-full flex items-center">
-            <CalendarDays className="absolute left-2 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+            <CalendarDays className="absolute left-2 md:left-auto md:right-2 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
             <DateInput
               value={departureDate}
               onChange={setDepartureDate}
-              className="w-full pl-8 pr-2 py-2.5 text-base text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent border border-gray-200 rounded-lg cursor-pointer"
+              className="w-full pl-8 md:pl-2 md:pr-8 pr-2 py-2.5 text-base text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent border border-gray-200 rounded-lg cursor-pointer"
               placeholder="gg.aa.yyyy"
             />
           </div>
@@ -192,11 +208,11 @@ export default function FlightSearchBox({
             </label>
           </div>
           <div className="relative w-full flex items-center">
-            <CalendarDays className="absolute left-2 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+            <CalendarDays className="absolute left-2 md:left-auto md:right-2 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
             <DateInput
               value={returnDate}
               onChange={setReturnDate}
-              className={`w-full pl-8 pr-2 py-2.5 text-base text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent border border-gray-200 rounded-lg cursor-pointer ${tripType === 'oneWay' ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`w-full pl-8 md:pl-2 md:pr-8 pr-2 py-2.5 text-base text-gray-700 placeholder-gray-400 focus:outline-none bg-transparent border border-gray-200 rounded-lg cursor-pointer ${tripType === 'oneWay' ? 'opacity-50 cursor-not-allowed' : ''}`}
               placeholder={tripType === 'oneWay' ? 'Tek Yön' : 'gg.aa.yyyy'}
               disabled={tripType === 'oneWay'}
             />
@@ -262,7 +278,7 @@ export default function FlightSearchBox({
           <button
             type="submit"
             disabled={isLoading}
-            className="flex-shrink-0 px-4 py-2.5 bg-green-500 text-white rounded-lg font-medium text-sm hover:bg-green-600 transition disabled:bg-gray-400"
+            className="flex-shrink-0 px-4 py-2.5 bg-green-500 text-white rounded-md font-medium text-sm hover:bg-green-600 transition disabled:bg-gray-400"
           >
             {isLoading ? '...' : 'Düzenle'}
           </button>

@@ -365,24 +365,6 @@ const BaggageSelection = ({ passengers, flight, onBaggageChange, baggageSelectio
     )
 }
 
-const PromoBanner = () => {
-    return (
-        <div className="mt-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg shadow-lg p-6 text-white text-center flex flex-col items-center">
-            <h3 className="text-lg font-bold">Memlekette İnternetsiz Kalma!</h3>
-            <p className="text-sm mt-2 mb-4 opacity-90">Gurbetbiz mobil uygulamasını indirin, 10 GB internetli SIM kart hediyesini kapın!</p>
-            <div className="bg-white rounded-lg p-4">
-                 {/* Telefon ikonu */}
-                <svg className="w-20 h-20 text-gray-800" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
-                </svg>
-            </div>
-            <button className="mt-4 w-full bg-white text-green-600 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-all duration-300 ease-in-out">
-                Hemen İndir
-            </button>
-        </div>
-    );
-};
-
 const initialPassengerState = {
     id: null,
     firstName: '',
@@ -803,7 +785,6 @@ export default function BookingPage() {
                                 </div>
                             </div>
                         </div>
-                        <PromoBanner />
                     </div>
                 </div>
                 {/* Rezervasyon Modalı */}

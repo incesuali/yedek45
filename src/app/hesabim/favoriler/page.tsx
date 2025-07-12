@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import AccountSidebar from '@/components/AccountSidebar';
-import { Heart, ArrowRight, Calendar, Trash2 } from 'lucide-react';
+import { Heart, ArrowRight, Calendar, Trash2, User, Plane, Users, Star, Receipt, Search, Bell } from 'lucide-react';
 
 export default function FavorilerPage() {
   const { data: session, status } = useSession();
@@ -12,6 +12,18 @@ export default function FavorilerPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const router = useRouter();
+
+  const menuItems = [
+    { icon: User, label: 'Hesabım', href: '/hesabim' },
+    { icon: Plane, label: 'Seyahatlerim', href: '/hesabim/seyahatlerim' },
+    { icon: Users, label: 'Yolcularım', href: '/hesabim/yolcularim' },
+    { icon: Star, label: 'Puanlarım', href: '/hesabim/puanlarim' },
+    { icon: Receipt, label: 'Fatura Bilgilerim', href: '/hesabim/fatura' },
+    { icon: Search, label: 'Aramalarım', href: '/hesabim/aramalarim' },
+    { icon: Bell, label: 'Fiyat Alarmlarım', href: '/hesabim/alarmlar' },
+    { icon: Heart, label: 'Favorilerim', href: '/hesabim/favoriler' },
+  ];
+  const handleLogout = () => { signOut({ callbackUrl: '/' }); };
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -49,14 +61,13 @@ export default function FavorilerPage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex gap-8">
-          <AccountSidebar />
+      <div className="sm:container sm:mx-auto sm:px-4 sm:py-8 container mx-auto px-2 py-4">
+        <div className="sm:flex sm:gap-8 flex flex-col gap-2">
           
-          <div className="flex-1 bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center gap-3 mb-6">
+          <div className="flex-1 bg-white rounded-lg shadow-sm sm:p-6 p-2">
+            <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
               <Heart className="w-6 h-6 text-red-500" />
-              <h1 className="text-2xl font-bold text-gray-800">Favorilerim</h1>
+              <h1 className="sm:text-2xl text-lg font-bold text-gray-800">Favorilerim</h1>
             </div>
             
             {loading ? (
@@ -68,48 +79,45 @@ export default function FavorilerPage() {
                 Henüz favori aramanız bulunmamaktadır.
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="sm:space-y-4 space-y-2">
                 {favorites.map((favorite) => (
                   <div 
                     key={favorite.id}
-                    className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                    className="border rounded-lg sm:p-4 p-2 hover:bg-gray-50 transition-colors"
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-8">
-                        <div className="flex items-center gap-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-8">
+                        <div className="flex items-center gap-2 sm:gap-3">
                           <div className="flex flex-col">
-                            <span className="text-sm text-gray-500">Nereden</span>
-                            <span className="font-medium">{favorite.origin}</span>
+                            <span className="text-xs sm:text-sm text-gray-500">Nereden</span>
+                            <span className="font-medium text-xs sm:text-base">{favorite.origin}</span>
                           </div>
                           <ArrowRight className="w-5 h-5 text-gray-400" />
                           <div className="flex flex-col">
-                            <span className="text-sm text-gray-500">Nereye</span>
-                            <span className="font-medium">{favorite.destination}</span>
+                            <span className="text-xs sm:text-sm text-gray-500">Nereye</span>
+                            <span className="font-medium text-xs sm:text-base">{favorite.destination}</span>
                           </div>
                         </div>
-
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 sm:gap-2">
                           <Calendar className="w-5 h-5 text-gray-400" />
                           <div className="flex flex-col">
-                            <span className="text-sm text-gray-500">Tarih</span>
-                            <span className="font-medium">
+                            <span className="text-xs sm:text-sm text-gray-500">Tarih</span>
+                            <span className="font-medium text-xs sm:text-base">
                               {new Date(favorite.departureDate).toLocaleDateString("tr-TR")}
                             </span>
                           </div>
                         </div>
-
                         <div className="flex flex-col">
-                          <span className="text-sm text-gray-500">Eklenme</span>
-                          <span className="font-medium">
+                          <span className="text-xs sm:text-sm text-gray-500">Eklenme</span>
+                          <span className="font-medium text-xs sm:text-base">
                             {new Date(favorite.createdAt).toLocaleDateString("tr-TR")}
                           </span>
                         </div>
                       </div>
-
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1 sm:gap-2">
                         <button
                           onClick={() => router.push(`/flights/search?from=${favorite.origin}&to=${favorite.destination}&date=${new Date(favorite.departureDate).toISOString().split('T')[0]}`)}
-                          className="px-4 py-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                          className="sm:px-4 sm:py-2 px-2 py-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors text-xs sm:text-base"
                         >
                           Uçuşları Gör
                         </button>
@@ -126,8 +134,8 @@ export default function FavorilerPage() {
               </div>
             )}
 
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600">
+            <div className="mt-4 sm:mt-6 p-2 sm:p-4 bg-gray-50 rounded-lg">
+              <p className="text-xs sm:text-sm text-gray-600">
                 Favori aramalarınızı buradan kolayca tekrar yapabilir, fiyatları kontrol edebilirsiniz.
                 Sık uçtuğunuz rotaları favorilerinize ekleyerek daha hızlı bilet alabilirsiniz.
               </p>

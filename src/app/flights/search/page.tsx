@@ -44,7 +44,7 @@ async function fetchPricesFromAPI(origin: string, destination: string, baseDate:
   }
 }
 
-// Uçuş kartı bileşeni
+// --- MODERN FLIGHTCARD TASARIMI BAŞLANGIÇ ---
 function FlightCard({ flight, onSelect, airlinesList }: { flight: any, onSelect: () => void, airlinesList: Airline[] }) {
   const router = useRouter();
   const { data: session } = useSession();
@@ -55,42 +55,56 @@ function FlightCard({ flight, onSelect, airlinesList }: { flight: any, onSelect:
     router.push(`/flights/booking?flight=${flightData}`);
   };
 
+  // Kalkış ve varış tarih-saat formatlama
+  const departureDateStr = flight.departureTime ? format(new Date(flight.departureTime), 'dd MMM', { locale: tr }) : '';
+  const departureTimeStr = flight.departureTime ? format(new Date(flight.departureTime), 'HH:mm') : '--:--';
+  const arrivalDateStr = flight.arrivalTime ? format(new Date(flight.arrivalTime), 'dd MMM', { locale: tr }) : '';
+  const arrivalTimeStr = flight.arrivalTime ? format(new Date(flight.arrivalTime), 'HH:mm') : '--:--';
+
   return (
     <div className="bg-white rounded-xl shadow p-4 flex flex-col md:flex-row md:items-center gap-4 border border-gray-100 hover:shadow-lg transition">
-      <div className="flex-1 flex flex-col md:flex-row md:items-center gap-4">
-        <div className="flex flex-col items-center min-w-[100px]">
-          {airlineObj?.logoUrl && (
-            <img src={airlineObj.logoUrl} alt={airlineObj.name} className="h-8 w-8 object-contain mb-1" />
-          )}
-          <span className="font-semibold text-lg text-gray-800">{airlineObj?.name || flight.airlineName || flight.airline || "Havayolu"}</span>
-          <span className="text-xs text-gray-500">{flight.flightNumber}</span>
+      {/* Sol: Havayolu logo ve adı */}
+      <div className="flex flex-col items-center min-w-[100px]">
+        {airlineObj?.logoUrl ? (
+          <img src={airlineObj.logoUrl} alt={airlineObj.name} className="h-10 w-10 object-contain mb-1" />
+        ) : (
+          <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center mb-1 text-xl font-bold text-gray-500">
+            {(airlineObj?.name || flight.airlineName || flight.airline || 'H')[0]}
+          </div>
+        )}
+        <span className="font-semibold text-base text-gray-800 text-center leading-tight">{airlineObj?.name || flight.airlineName || flight.airline || "Havayolu"}</span>
+        <span className="text-xs text-gray-400">{flight.flightNumber}</span>
+      </div>
+      {/* Orta: Saatler, havalimanı, ok, süre, bagaj */}
+      <div className="flex-1 flex flex-col md:flex-row md:items-center gap-2 md:gap-6 justify-center">
+        <div className="flex flex-col items-center">
+          <span className="text-xs text-gray-400 mb-0.5">{departureDateStr}</span>
+          <span className="text-gray-900 font-bold text-xl leading-tight">{departureTimeStr}</span>
+          <span className="text-xs text-gray-500">{flight.origin || flight.departureAirport}</span>
         </div>
-        <div className="flex-1 flex flex-col md:flex-row md:items-center gap-2 md:gap-6">
-          <div className="flex flex-col items-center">
-            <span className="text-gray-700 font-bold text-xl">{flight.departureTime?.slice(0,5) || "--:--"}</span>
-            <span className="text-xs text-gray-500">{flight.origin || flight.departureAirport}</span>
-          </div>
-          <div className="flex flex-col items-center">
-            <span className="text-gray-400">→</span>
-            <span className="text-xs text-gray-400">{flight.duration || "-"}</span>
-          </div>
-          <div className="flex flex-col items-center">
-            <span className="text-gray-700 font-bold text-xl">{flight.arrivalTime?.slice(0,5) || "--:--"}</span>
-            <span className="text-xs text-gray-500">{flight.destination || flight.arrivalAirport}</span>
-          </div>
-          <div className="flex flex-col items-center">
-            <span className="text-xs text-gray-500">Bagaj: {flight.baggage || '-'}</span>
-          </div>
+        <div className="flex flex-col items-center mx-2">
+          <span className="text-gray-400 text-2xl">→</span>
+          <span className="text-xs text-gray-400">{flight.duration || "-"}</span>
+        </div>
+        <div className="flex flex-col items-center">
+          <span className="text-xs text-gray-400 mb-0.5">{arrivalDateStr}</span>
+          <span className="text-gray-900 font-bold text-xl leading-tight">{arrivalTimeStr}</span>
+          <span className="text-xs text-gray-500">{flight.destination || flight.arrivalAirport}</span>
+        </div>
+        <div className="flex flex-col items-center ml-2">
+          <span className="text-xs text-gray-500">Bagaj: {flight.baggage || '-'}</span>
         </div>
       </div>
+      {/* Sağ: Fiyat ve Seç butonu */}
       <div className="flex flex-col items-end min-w-[120px]">
         <span className="text-green-600 font-bold text-2xl">{flight.price?.toLocaleString()} EUR</span>
         <span className={`text-xs mt-1 ${flight.direct ? "text-green-500" : "text-orange-500"}`}>{flight.direct ? "Direkt" : "Aktarmalı"}</span>
-        <button className="mt-3 px-4 py-2 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition" onClick={onSelect}>Seç</button>
+        <button className="mt-3 px-5 py-2 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition text-base" onClick={onSelect}>Seç</button>
       </div>
     </div>
   );
 }
+// --- MODERN FLIGHTCARD TASARIMI BİTİŞ ---
 
 // Bagaj seçimi modalı
 function BaggageModal({ open, onClose, passengers, baggageOptions, onSave }: {
@@ -344,8 +358,19 @@ function FlightBrandOptions({ flight, onSelectBrand }: { flight: any, onSelectBr
       <div className="font-semibold text-green-700 mb-2">Paket Seçenekleri</div>
       <div className="grid md:grid-cols-3 gap-4">
         {brands.map(brand => (
-          <div key={brand.id} className="bg-white rounded-lg border border-gray-200 p-4 flex flex-col gap-2 shadow-sm">
-            <div className="font-bold text-lg text-green-700">{brand.name}</div>
+          <div key={brand.id} className="bg-white rounded-lg border border-gray-200 p-4 flex flex-col gap-2 shadow-sm relative overflow-hidden">
+            {/* --- RENKLİ ŞERİT BAŞLANGIÇ --- */}
+            {brand.id === 'ecofly' && (
+              <div className="absolute top-0 left-0 w-full h-1.5 rounded-t-lg" style={{background: 'linear-gradient(90deg, #ffe259 0%, #ffa751 100%)'}} />
+            )}
+            {brand.id === 'extrafly' && (
+              <div className="absolute top-0 left-0 w-full h-1.5 rounded-t-lg" style={{background: 'linear-gradient(90deg, #43cea2 0%, #185a9d 100%)'}} />
+            )}
+            {brand.id === 'primefly' && (
+              <div className="absolute top-0 left-0 w-full h-1.5 rounded-t-lg" style={{background: 'linear-gradient(90deg, #ff1e56 0%, #ffac41 100%)'}} />
+            )}
+            {/* --- RENKLİ ŞERİT BİTİŞ --- */}
+            <div className="font-bold text-lg text-gray-900">{brand.name}</div>
             <div className="text-gray-700 text-sm">{brand.description}</div>
             <div className="text-xs text-gray-500">Bagaj: {brand.baggage}</div>
             <div className="text-xs text-gray-500">Kurallar: {brand.rules}</div>
@@ -679,6 +704,74 @@ export default function FlightSearchPage() {
     window.location.href = `/flights/booking?flight=${flightData}`;
   };
 
+  // --- FİYAT BARIN ÜSTÜNDE MODERN TASARIM BAŞLANGIÇ ---
+  let barChartContent = null;
+  if (!loadingPrices && !errorPrices) {
+    // Fiyatları normalize et (min 72px, max 112px, farklar yumuşak)
+    const prices = departurePrices.map(p => p.price);
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+    const getBarHeight = (price: number) => {
+      if (maxPrice === minPrice) return 92;
+      const norm = (price - minPrice) / (maxPrice - minPrice);
+      return 72 + Math.sqrt(norm) * 40;
+    };
+    barChartContent = departurePrices.map(({ date, price, currency }) => {
+      const isSelected = selectedDeparture && isSameDay(date, selectedDeparture);
+      const barHeight = getBarHeight(price);
+      const dayStr = format(date, "dd MMM", { locale: tr });
+      const weekDay = format(date, "EEE", { locale: tr });
+      return (
+        <button
+          key={date.toISOString()}
+          onClick={() => {
+            handleSelect(date);
+            if (tripType === "roundTrip") setStep("return");
+          }}
+          className={`flex flex-col items-center min-w-[56px] w-14 pt-0 pb-0 rounded-b-2xl border-0 bg-transparent transition-all duration-200 cursor-pointer select-none group items-end
+            ${isSelected ? "scale-105 border-b-4 border-green-500" : "hover:scale-105"}
+          `}
+          style={{ outline: 'none' }}
+        >
+          {/* Fiyat barın üstünde */}
+          <span className={`text-lg font-bold mb-2 ${isSelected ? "text-green-700" : "text-gray-700"}`}>{price.toLocaleString()} €</span>
+          {/* Bar */}
+          <div className={`w-14 flex flex-col items-center justify-end rounded-t-xl transition-all duration-200 mb-1
+            ${isSelected ? "bg-green-700 shadow-lg" : "bg-green-400/90 group-hover:bg-green-500"}
+          `}
+            style={{ height: barHeight }}
+          >
+          </div>
+          {/* Tarih ve gün */}
+          <span className={`mt-1 text-sm font-semibold leading-tight ${isSelected ? "text-green-700" : "text-gray-700"}`}>{dayStr}</span>
+          <span className={`text-xs ${isSelected ? "text-green-600 font-bold" : "text-gray-400"}`}>{weekDay}</span>
+        </button>
+      );
+    });
+  }
+  // --- FİYAT BARIN ÜSTÜNDE MODERN TASARIM BİTİŞ ---
+
+  // --- BAŞLIK VE HAVAALANI GRAFİĞİN ALTINA ALINDI ---
+  <div className="flex flex-col items-center w-full">
+    <div className="flex-grow flex gap-6 mt-0 overflow-x-auto pb-2 items-end justify-center w-full">
+      {loadingPrices ? (
+        <div className="flex items-center justify-center w-full h-full text-gray-400">
+          <Loader2 className="w-5 h-5 animate-spin" />
+        </div>
+      ) : errorPrices ? (
+        <div className="text-red-500 text-sm">{errorPrices}</div>
+      ) : (
+        barChartContent
+      )}
+    </div>
+    <div className="flex items-center gap-2 mt-4">
+      <PlaneTakeoff className="w-6 h-6 text-green-600" />
+      <span className="text-lg font-bold text-gray-800">Gidiş Tarihi Seçimi</span>
+    </div>
+    <div className="text-gray-500 text-sm mt-0 mb-1">{origin} → {destination}</div>
+  </div>
+  // --- BAŞLIK VE HAVAALANI GRAFİĞİN ALTINA ALINDI ---
+
   // Responsive ve modern tasarım
   return (
     <>
@@ -945,17 +1038,8 @@ export default function FlightSearchPage() {
             />
             {/* Fiyat kutuları buraya taşındı */}
             <div className="mt-6 mb-6">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div className="flex-shrink-0">
-                  <div className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                    <PlaneTakeoff className="w-6 h-6 text-green-600" />
-                    <span>Gidiş Tarihi Seçimi</span>
-                  </div>
-                  <div className="text-gray-500 text-sm mt-1 ml-8">
-                    {origin} → {destination}
-                  </div>
-                </div>
-                <div className="flex-grow flex gap-2 mt-2 md:mt-0 overflow-x-auto pb-2">
+              <div className="flex flex-col items-center w-full">
+                <div className="flex-grow flex gap-6 mt-0 overflow-x-auto pb-2 items-end justify-center w-full">
                   {loadingPrices ? (
                     <div className="flex items-center justify-center w-full h-full text-gray-400">
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -963,26 +1047,14 @@ export default function FlightSearchPage() {
                   ) : errorPrices ? (
                     <div className="text-red-500 text-sm">{errorPrices}</div>
                   ) : (
-                    departurePrices.map(({ date, price, currency }) => (
-                      <button
-                        key={date.toISOString()}
-                        onClick={() => {
-                          handleSelect(date);
-                          if (tripType === "roundTrip") setStep("return");
-                        }}
-                        className={`flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all duration-200 min-w-[80px]
-                          ${(selectedDeparture && isSameDay(date, selectedDeparture))
-                            ? "bg-green-500 text-white border-green-500 shadow-lg" 
-                            : "bg-white text-gray-800 border-gray-200 hover:border-green-400 hover:shadow-md"}
-                        `}
-                      >
-                        <span className="text-sm font-medium">{format(date, "dd MMM", { locale: tr })}</span>
-                        <span className="font-bold text-xl mt-1">{price.toLocaleString()}</span>
-                        <span className="text-xs font-medium opacity-80">{currency}</span>
-                      </button>
-                    ))
+                    barChartContent
                   )}
                 </div>
+                <div className="flex items-center gap-2 mt-4">
+                  <PlaneTakeoff className="w-6 h-6 text-green-600" />
+                  <span className="text-lg font-bold text-gray-800">Gidiş Tarihi Seçimi</span>
+                </div>
+                <div className="text-gray-500 text-sm mt-0 mb-1">{origin} → {destination}</div>
               </div>
             </div>
           </div>

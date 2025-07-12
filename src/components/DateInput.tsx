@@ -11,6 +11,7 @@ interface DateInputProps {
   disabled?: boolean;
   className?: string;
   placeholder?: string;
+  label?: string;
 }
 
 // Demo fiyat verisi (gerçek kullanımda API'den alınabilir)
@@ -39,10 +40,43 @@ function CustomDayContent(props: any) {
   );
 }
 
-const DateInput: React.FC<DateInputProps> = ({ value, onChange, disabled, className, placeholder }) => {
+const DateInput: React.FC<DateInputProps> = ({ value, onChange, disabled, className, placeholder, label }) => {
   const [show, setShow] = useState(false);
   const [selected, setSelected] = useState<Date | undefined>(value);
   const inputRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [visibleMonths, setVisibleMonths] = useState<Date[]>([]);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // İlk açılışta 2 ay göster
+  useEffect(() => {
+    if (show && isMobile) {
+      const now = selected || new Date();
+      const months = [new Date(now.getFullYear(), now.getMonth(), 1), new Date(now.getFullYear(), now.getMonth() + 1, 1)];
+      setVisibleMonths(months);
+    }
+  }, [show, isMobile, selected]);
+
+  // Scroll ile yeni ay ekle
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 50) {
+      // Son ayı bul ve bir sonraki ayı ekle
+      const lastMonth = visibleMonths[visibleMonths.length - 1];
+      const nextMonth = new Date(lastMonth.getFullYear(), lastMonth.getMonth() + 1, 1);
+      setVisibleMonths((prev) => {
+        // Aynı ay tekrar eklenmesin
+        if (prev.some(m => m.getFullYear() === nextMonth.getFullYear() && m.getMonth() === nextMonth.getMonth())) return prev;
+        return [...prev, nextMonth];
+      });
+    }
+  };
 
   // Dışarı tıklanınca popup'ı kapat
   useEffect(() => {
@@ -51,13 +85,13 @@ const DateInput: React.FC<DateInputProps> = ({ value, onChange, disabled, classN
         setShow(false);
       }
     }
-    if (show) {
+    if (show && !isMobile) {
       document.addEventListener('mousedown', handleClickOutside);
     } else {
       document.removeEventListener('mousedown', handleClickOutside);
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [show]);
+  }, [show, isMobile]);
 
   // Seçimi uygula
   const handleApply = () => {
@@ -78,6 +112,15 @@ const DateInput: React.FC<DateInputProps> = ({ value, onChange, disabled, classN
   const formatCaption = (month: Date) =>
     month.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
 
+  // Mobilde tarih seçilince hemen uygula
+  const handleMobileSelect = (date: Date | undefined) => {
+    setSelected(date);
+    if (isMobile && date) {
+      onChange(date);
+      setShow(false);
+    }
+  };
+
   return (
     <div className={`relative ${className || ''}`} ref={inputRef}>
       <button
@@ -86,9 +129,10 @@ const DateInput: React.FC<DateInputProps> = ({ value, onChange, disabled, classN
         onClick={() => setShow(!show)}
         disabled={disabled}
       >
-        {selected ? selected.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' }) : (placeholder || 'Tarih seçin')}
+        {selected ? selected.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' }) : (placeholder || label || 'Tarih seçin')}
       </button>
-      {show && (
+      {/* Masaüstü popup */}
+      {show && !isMobile && (
         <div className="absolute z-[9999] mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 min-w-[500px] right-0">
           <DayPicker
             mode="single"
@@ -109,6 +153,48 @@ const DateInput: React.FC<DateInputProps> = ({ value, onChange, disabled, classN
           <div className="flex justify-end gap-2 mt-2">
             <button onClick={handleCancel} className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50">İptal</button>
             <button onClick={handleApply} className="px-4 py-2 rounded-lg bg-green-500 text-white font-semibold hover:bg-green-600">Tarihi ayarla</button>
+          </div>
+        </div>
+      )}
+      {/* Mobil tam ekran scrollable modal */}
+      {show && isMobile && (
+        <div className="fixed inset-0 z-[9999] bg-black bg-opacity-40 flex items-end">
+          <div className="w-full bg-white rounded-t-2xl p-4 pb-8 shadow-2xl animate-slide-up max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-semibold text-lg text-gray-800">{label || placeholder || 'Tarih Seç'}</span>
+              <button onClick={handleCancel} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                <span className="text-2xl text-gray-500">×</span>
+              </button>
+            </div>
+            <div className="overflow-y-scroll max-h-[55vh]" onScroll={handleScroll}>
+              {visibleMonths.map((month, idx) => (
+                <div key={month.toISOString()} className="mb-6">
+                  <DayPicker
+                    mode="single"
+                    selected={selected}
+                    onSelect={handleMobileSelect}
+                    locale={tr}
+                    month={month}
+                    numberOfMonths={1}
+                    showOutsideDays
+                    components={{
+                      DayContent: CustomDayContent
+                    }}
+                    className="mb-2 text-base font-normal"
+                    classNames={{
+                      day_selected: "bg-green-100 border border-green-500 text-green-900",
+                      day: "rounded-lg text-base font-semibold min-w-[44px] min-h-[44px] flex flex-col items-center justify-center",
+                      caption: "text-center text-base font-semibold mb-2",
+                      table: "w-full border-collapse",
+                      head_row: "",
+                      head_cell: "text-xs text-gray-400 font-medium p-1",
+                      row: "",
+                      cell: "p-0",
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}

@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import AccountSidebar from '@/components/AccountSidebar';
+import { useSession, signOut } from 'next-auth/react';
+import { User, Plane, Users, Star, Receipt, Search, Bell, Heart } from 'lucide-react';
 
 // Form bileşeni
 function PassengerForm({
@@ -37,9 +39,9 @@ function PassengerForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form onSubmit={handleSubmit} className="sm:space-y-8 space-y-4">
       {/* 1. Satır: Ad, Soyad, TC Kimlik No */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="sm:grid sm:grid-cols-3 sm:gap-6 grid grid-cols-1 gap-2">
         {/* Ad */}
         <div>
           <label className="block text-sm text-gray-600 mb-1">Ad</label>
@@ -47,7 +49,7 @@ function PassengerForm({
             type="text"
             value={formData.firstName}
             onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-            className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+            className="w-full sm:px-4 px-2 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm"
             required
           />
         </div>
@@ -58,7 +60,7 @@ function PassengerForm({
             type="text"
             value={formData.lastName}
             onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-            className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+            className="w-full sm:px-4 px-2 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm"
             required
           />
         </div>
@@ -69,7 +71,7 @@ function PassengerForm({
             type="text"
             value={formData.identityNumber || ''}
             onChange={(e) => setFormData({ ...formData, identityNumber: e.target.value })}
-            className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+            className="w-full sm:px-4 px-2 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm"
             maxLength={11}
           />
           <div className="mt-2">
@@ -87,7 +89,7 @@ function PassengerForm({
       </div>
 
       {/* 2. Satır: Doğum Tarihi, Ülke Kodu + Cep Telefonu, Cinsiyet */}
-      <div className="grid grid-cols-3 gap-8">
+      <div className="sm:grid sm:grid-cols-3 sm:gap-8 grid grid-cols-1 gap-2">
         {/* Doğum Tarihi */}
         <div>
           <label className="block text-sm text-gray-600 mb-1">Doğum Tarihi</label>
@@ -95,7 +97,7 @@ function PassengerForm({
             <select
               value={formData.birthDay}
               onChange={(e) => setFormData({ ...formData, birthDay: e.target.value })}
-              className="w-12 h-11 px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm"
+              className="w-12 h-11 sm:px-3 px-1 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm"
               required
             >
               <option value="">Gün</option>
@@ -106,7 +108,7 @@ function PassengerForm({
             <select
               value={formData.birthMonth}
               onChange={(e) => setFormData({ ...formData, birthMonth: e.target.value })}
-              className="w-20 h-11 px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm"
+              className="w-20 h-11 sm:px-3 px-1 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm"
               required
             >
               <option value="">Ay</option>
@@ -117,7 +119,7 @@ function PassengerForm({
             <select
               value={formData.birthYear}
               onChange={(e) => setFormData({ ...formData, birthYear: e.target.value })}
-              className="w-20 h-11 px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm"
+              className="w-20 h-11 sm:px-3 px-1 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm"
               required
             >
               <option value="">Yıl</option>
@@ -129,13 +131,13 @@ function PassengerForm({
         </div>
         {/* Ülke Kodu + Cep Telefonu */}
         <div>
-          <div className="flex gap-6 items-end">
+          <div className="flex sm:gap-6 gap-2 items-end">
             <div>
               <label className="block text-sm text-gray-600 mb-1">Ülke Kodu</label>
               <select
                 value={formData.countryCode}
                 onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
-                className="w-20 h-11 px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+                className="w-20 h-11 sm:px-3 px-1 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm"
               >
                 <option value="">Seç</option>
                 <option value="+90">+90</option>
@@ -154,7 +156,7 @@ function PassengerForm({
                 type="tel"
                 value={formData.phone || ''}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full h-11 px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+                className="w-full h-11 sm:px-3 px-1 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm"
                 placeholder="555 666 77 77"
               />
             </div>
@@ -357,28 +359,39 @@ export default function YolcuDuzenlePage() {
     }
   };
 
+  const menuItems = [
+    { icon: User, label: 'Hesabım', href: '/hesabim' },
+    { icon: Plane, label: 'Seyahatlerim', href: '/hesabim/seyahatlerim' },
+    { icon: Users, label: 'Yolcularım', href: '/hesabim/yolcularim' },
+    { icon: Star, label: 'Puanlarım', href: '/hesabim/puanlarim' },
+    { icon: Receipt, label: 'Fatura Bilgilerim', href: '/hesabim/fatura' },
+    { icon: Search, label: 'Aramalarım', href: '/hesabim/aramalarim' },
+    { icon: Bell, label: 'Fiyat Alarmlarım', href: '/hesabim/alarmlar' },
+    { icon: Heart, label: 'Favorilerim', href: '/hesabim/favoriler' },
+  ];
+  const handleLogout = () => { signOut({ callbackUrl: '/' }); };
+
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex gap-8">
-          <AccountSidebar />
+      <div className="sm:container sm:mx-auto sm:px-4 sm:py-8 container mx-auto px-2 py-4">
+        <div className="sm:flex sm:gap-8 flex flex-col gap-2">
           
           <div className="flex-1">
             {/* Header */}
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
               <Link 
                 href="/hesabim/yolcularim"
                 className="text-gray-500 hover:text-gray-700 transition-colors"
               >
                 <ArrowLeft className="w-5 h-5" />
               </Link>
-              <h1 className="text-2xl text-gray-700 font-medium">
+              <h1 className="sm:text-2xl text-lg text-gray-700 font-medium">
                 {passengerId ? 'Yolcu Bilgilerini Düzenle' : 'Yeni Yolcu Ekle'}
               </h1>
             </div>
 
             {/* Form */}
-            <div className="bg-white rounded-2xl shadow-sm p-8">
+            <div className="bg-white rounded-2xl shadow-sm sm:p-8 p-2">
               <PassengerForm
                 initialData={initialFormData}
                 onSubmit={handleSubmit}

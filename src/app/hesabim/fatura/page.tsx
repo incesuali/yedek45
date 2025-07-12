@@ -3,6 +3,8 @@
 import AccountSidebar from '@/components/AccountSidebar';
 import { Building2, Home, Plus, Trash2, Edit } from 'lucide-react';
 import { useState } from 'react';
+import { useSession, signOut } from 'next-auth/react';
+import { User, Plane, Users, Star, Receipt, Search, Bell, Heart } from 'lucide-react';
 
 export default function FaturaPage() {
   const [addresses, setAddresses] = useState([
@@ -74,82 +76,93 @@ export default function FaturaPage() {
     });
   };
 
+  const menuItems = [
+    { icon: User, label: 'Hesabım', href: '/hesabim' },
+    { icon: Plane, label: 'Seyahatlerim', href: '/hesabim/seyahatlerim' },
+    { icon: Users, label: 'Yolcularım', href: '/hesabim/yolcularim' },
+    { icon: Star, label: 'Puanlarım', href: '/hesabim/puanlarim' },
+    { icon: Receipt, label: 'Fatura Bilgilerim', href: '/hesabim/fatura' },
+    { icon: Search, label: 'Aramalarım', href: '/hesabim/aramalarim' },
+    { icon: Bell, label: 'Fiyat Alarmlarım', href: '/hesabim/alarmlar' },
+    { icon: Heart, label: 'Favorilerim', href: '/hesabim/favoriler' },
+  ];
+  const handleLogout = () => { signOut({ callbackUrl: '/' }); };
+
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex gap-8">
-          <AccountSidebar />
+      <div className="sm:container sm:mx-auto sm:px-4 sm:py-8 container mx-auto px-2 py-4">
+        <div className="sm:flex sm:gap-8 flex flex-col gap-2">
           
-          <div className="flex-1 bg-white rounded-lg shadow-sm p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h1 className="text-2xl font-bold text-gray-800">Fatura Bilgilerim</h1>
+          <div className="flex-1 bg-white rounded-lg shadow-sm sm:p-6 p-2">
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
+              <h1 className="sm:text-2xl text-lg font-bold text-gray-800">Fatura Bilgilerim</h1>
               <button
                 onClick={handleAdd}
-                className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
+                className="sm:px-4 sm:py-2 px-2 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2 text-xs sm:text-base"
               >
                 <Plus className="w-4 h-4" />
                 <span>Yeni Adres Ekle</span>
               </button>
             </div>
             
-            <div className="space-y-4">
+            <div className="sm:space-y-4 space-y-2">
               {addresses.map((address) => (
                 <div 
                   key={address.id}
-                  className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                  className="border rounded-lg sm:p-4 p-2 hover:bg-gray-50 transition-colors"
                 >
                   {editingId === address.id ? (
-                    <div className="space-y-2">
-                      <div className="flex gap-2">
-                        <select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })} className={selectClass}>
+                    <div className="sm:space-y-2 space-y-1">
+                      <div className="flex sm:gap-2 gap-1">
+                        <select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })} className={selectClass + ' text-xs sm:text-base'}>
                           <option value="personal">Bireysel</option>
                           <option value="corporate">Kurumsal</option>
                         </select>
-                        <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Başlık" className={inputClass + " flex-1"} />
+                        <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Başlık" className={inputClass + ' flex-1 text-xs sm:text-base'} />
                       </div>
                       {form.type === 'personal' ? (
                         <>
-                          <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Ad Soyad" className={inputClass} />
-                          <input value={form.tcNo} onChange={e => setForm({ ...form, tcNo: e.target.value })} placeholder="TC Kimlik No" className={inputClass} />
+                          <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Ad Soyad" className={inputClass + ' text-xs sm:text-base'} />
+                          <input value={form.tcNo} onChange={e => setForm({ ...form, tcNo: e.target.value })} placeholder="TC Kimlik No" className={inputClass + ' text-xs sm:text-base'} />
                         </>
                       ) : (
                         <>
-                          <input value={form.companyName} onChange={e => setForm({ ...form, companyName: e.target.value })} placeholder="Şirket Adı" className={inputClass} />
-                          <input value={form.taxOffice} onChange={e => setForm({ ...form, taxOffice: e.target.value })} placeholder="Vergi Dairesi" className={inputClass} />
-                          <input value={form.taxNo} onChange={e => setForm({ ...form, taxNo: e.target.value })} placeholder="Vergi No" className={inputClass} />
+                          <input value={form.companyName} onChange={e => setForm({ ...form, companyName: e.target.value })} placeholder="Şirket Adı" className={inputClass + ' text-xs sm:text-base'} />
+                          <input value={form.taxOffice} onChange={e => setForm({ ...form, taxOffice: e.target.value })} placeholder="Vergi Dairesi" className={inputClass + ' text-xs sm:text-base'} />
+                          <input value={form.taxNo} onChange={e => setForm({ ...form, taxNo: e.target.value })} placeholder="Vergi No" className={inputClass + ' text-xs sm:text-base'} />
                         </>
                       )}
-                      <input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} placeholder="Adres" className={inputClass} />
-                      <div className="flex gap-2">
-                        <input value={form.district} onChange={e => setForm({ ...form, district: e.target.value })} placeholder="İlçe" className={inputClass + " flex-1"} />
-                        <input value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} placeholder="Şehir" className={inputClass + " flex-1"} />
+                      <input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} placeholder="Adres" className={inputClass + ' text-xs sm:text-base'} />
+                      <div className="flex sm:gap-2 gap-1">
+                        <input value={form.district} onChange={e => setForm({ ...form, district: e.target.value })} placeholder="İlçe" className={inputClass + ' flex-1 text-xs sm:text-base'} />
+                        <input value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} placeholder="Şehir" className={inputClass + ' flex-1 text-xs sm:text-base'} />
                       </div>
-                      <div className="flex gap-2 mt-2">
-                        <button onClick={handleSave} className="px-3 py-1 bg-green-500 text-white rounded">Kaydet</button>
-                        <button onClick={() => { setEditingId(null); setForm(null); }} className="px-3 py-1 bg-gray-200 rounded">Vazgeç</button>
+                      <div className="flex sm:gap-2 gap-1 mt-2">
+                        <button onClick={handleSave} className="px-3 py-1 bg-green-500 text-white rounded text-xs sm:text-base">Kaydet</button>
+                        <button onClick={() => { setEditingId(null); setForm(null); }} className="px-3 py-1 bg-gray-200 rounded text-xs sm:text-base">Vazgeç</button>
                       </div>
                     </div>
                   ) : (
                     <>
                       <div className="flex justify-between">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3">
                           {address.type === 'personal' ? (
                             <Home className="w-5 h-5 text-blue-600" />
                           ) : (
                             <Building2 className="w-5 h-5 text-purple-600" />
                           )}
-                          <h3 className="font-medium">{address.title}</h3>
+                          <h3 className="font-medium text-xs sm:text-base">{address.title}</h3>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 sm:gap-2">
                           <button className="p-2 text-gray-600 hover:text-blue-600 rounded-lg hover:bg-gray-100" onClick={() => handleEdit(address)}>
-                            <Edit className="w-5 h-5" />
+                            <Edit className="w-4 h-4" />
                           </button>
                           <button className="p-2 text-gray-600 hover:text-red-600 rounded-lg hover:bg-gray-100" onClick={() => handleDelete(address.id)}>
                             <Trash2 className="w-5 h-5" />
                           </button>
                         </div>
                       </div>
-                      <div className="mt-4 space-y-2 text-gray-600">
+                      <div className="mt-2 sm:mt-4 space-y-1 sm:space-y-2 text-gray-600 text-xs sm:text-base">
                         {address.type === 'personal' ? (
                           <>
                             <p>{address.name}</p>
@@ -171,43 +184,43 @@ export default function FaturaPage() {
               ))}
               {/* Yeni adres ekleme formu */}
               {isAdding && (
-                <div className="border rounded-lg p-4 bg-gray-50 mt-4">
-                  <div className="space-y-2">
-                    <div className="flex gap-2">
-                      <select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })} className={selectClass}>
+                <div className="border rounded-lg sm:p-4 p-2 bg-gray-50 mt-2 sm:mt-4">
+                  <div className="sm:space-y-2 space-y-1">
+                    <div className="flex sm:gap-2 gap-1">
+                      <select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })} className={selectClass + ' text-xs sm:text-base'}>
                         <option value="personal">Bireysel</option>
                         <option value="corporate">Kurumsal</option>
                       </select>
-                      <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Başlık" className={inputClass + " flex-1"} />
+                      <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Başlık" className={inputClass + ' flex-1 text-xs sm:text-base'} />
                     </div>
                     {form.type === 'personal' ? (
                       <>
-                        <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Ad Soyad" className={inputClass} />
-                        <input value={form.tcNo} onChange={e => setForm({ ...form, tcNo: e.target.value })} placeholder="TC Kimlik No" className={inputClass} />
+                        <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Ad Soyad" className={inputClass + ' text-xs sm:text-base'} />
+                        <input value={form.tcNo} onChange={e => setForm({ ...form, tcNo: e.target.value })} placeholder="TC Kimlik No" className={inputClass + ' text-xs sm:text-base'} />
                       </>
                     ) : (
                       <>
-                        <input value={form.companyName} onChange={e => setForm({ ...form, companyName: e.target.value })} placeholder="Şirket Adı" className={inputClass} />
-                        <input value={form.taxOffice} onChange={e => setForm({ ...form, taxOffice: e.target.value })} placeholder="Vergi Dairesi" className={inputClass} />
-                        <input value={form.taxNo} onChange={e => setForm({ ...form, taxNo: e.target.value })} placeholder="Vergi No" className={inputClass} />
+                        <input value={form.companyName} onChange={e => setForm({ ...form, companyName: e.target.value })} placeholder="Şirket Adı" className={inputClass + ' text-xs sm:text-base'} />
+                        <input value={form.taxOffice} onChange={e => setForm({ ...form, taxOffice: e.target.value })} placeholder="Vergi Dairesi" className={inputClass + ' text-xs sm:text-base'} />
+                        <input value={form.taxNo} onChange={e => setForm({ ...form, taxNo: e.target.value })} placeholder="Vergi No" className={inputClass + ' text-xs sm:text-base'} />
                       </>
                     )}
-                    <input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} placeholder="Adres" className={inputClass} />
-                    <div className="flex gap-2">
-                      <input value={form.district} onChange={e => setForm({ ...form, district: e.target.value })} placeholder="İlçe" className={inputClass + " flex-1"} />
-                      <input value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} placeholder="Şehir" className={inputClass + " flex-1"} />
+                    <input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} placeholder="Adres" className={inputClass + ' text-xs sm:text-base'} />
+                    <div className="flex sm:gap-2 gap-1">
+                      <input value={form.district} onChange={e => setForm({ ...form, district: e.target.value })} placeholder="İlçe" className={inputClass + ' flex-1 text-xs sm:text-base'} />
+                      <input value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} placeholder="Şehir" className={inputClass + ' flex-1 text-xs sm:text-base'} />
                     </div>
-                    <div className="flex gap-2 mt-2">
-                      <button onClick={handleSave} className="px-3 py-1 bg-green-500 text-white rounded">Kaydet</button>
-                      <button onClick={() => { setIsAdding(false); setForm(null); }} className="px-3 py-1 bg-gray-200 rounded">Vazgeç</button>
+                    <div className="flex sm:gap-2 gap-1 mt-2">
+                      <button onClick={handleSave} className="px-3 py-1 bg-green-500 text-white rounded text-xs sm:text-base">Kaydet</button>
+                      <button onClick={() => { setIsAdding(false); setForm(null); }} className="px-3 py-1 bg-gray-200 rounded text-xs sm:text-base">Vazgeç</button>
                     </div>
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600">
+            <div className="mt-4 sm:mt-6 p-2 sm:p-4 bg-gray-50 rounded-lg">
+              <p className="text-xs sm:text-sm text-gray-600">
                 Bireysel ve kurumsal fatura bilgilerinizi kaydedebilir, düzenleyebilir veya silebilirsiniz.
                 Bilet alırken kayıtlı fatura bilgilerinizi kolayca seçebilirsiniz.
               </p>

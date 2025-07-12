@@ -1,0 +1,20 @@
+/* ========================================
+   🚨 MOBİL TASARIM ODAKLI ÇALIŞMA
+   ======================================== */
+/* 
+   📱 SADECE MOBİL TASARIM
+   - Desktop'a ASLA dokunmayacağız
+   - Sadece mobil responsive tasarım
+   - Desktop CSS'leri mevcut haliyle kalacak
+*/
+
+/* Mobil breakpoint'lerde çalış */
+@media (max-width: 768px) {
+  /* Mobil özel stiller buraya */
+}
+
+@media (max-width: 480px) {
+  /* Küçük mobil cihazlar için */
+}
+
+/* ======================================== */ 

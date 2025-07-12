@@ -6,9 +6,9 @@ import { toast } from 'react-hot-toast';
 import AccountSidebar from '@/components/AccountSidebar';
 import ChangePasswordModal from '@/components/ChangePasswordModal';
 import DeleteAccountModal from '@/components/DeleteAccountModal';
-import { useSession } from 'next-auth/react';
-import PriceAlertsPage from './price-alerts';
-import { User } from '@prisma/client';
+import { useSession, signOut } from 'next-auth/react';
+import { User, Plane, Users, Star, Receipt, Search, Bell, Heart } from 'lucide-react';
+import { User as PrismaUser } from '@prisma/client';
 
 interface UserData {
   firstName: string;
@@ -107,17 +107,27 @@ export default function HesabimPage() {
     return null;
   }
 
+  const menuItems = [
+    { icon: User, label: 'Hesabım', href: '/hesabim' },
+    { icon: Plane, label: 'Seyahatlerim', href: '/hesabim/seyahatlerim' },
+    { icon: Users, label: 'Yolcularım', href: '/hesabim/yolcularim' },
+    { icon: Star, label: 'Puanlarım', href: '/hesabim/puanlarim' },
+    { icon: Receipt, label: 'Fatura Bilgilerim', href: '/hesabim/fatura' },
+    { icon: Search, label: 'Aramalarım', href: '/hesabim/aramalarim' },
+    { icon: Bell, label: 'Fiyat Alarmlarım', href: '/hesabim/alarmlar' },
+    { icon: Heart, label: 'Favorilerim', href: '/hesabim/favoriler' },
+  ];
+  const handleLogout = () => { signOut({ callbackUrl: '/' }); };
+
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex gap-8">
-          <AccountSidebar />
-          
-          <div className="flex-1 bg-white rounded-lg shadow-sm p-6">
-            <h1 className="text-2xl font-bold text-gray-800 mb-6">Hesap Bilgileri</h1>
-            
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-3 gap-6">
+      <div className="sm:container sm:mx-auto sm:px-4 sm:py-8 container mx-auto px-2 py-4">
+        <div className="sm:flex sm:gap-8 flex flex-col gap-2">
+          <div className="flex-1 bg-white rounded-lg shadow-sm sm:p-6 p-2">
+            <h1 className="sm:text-2xl text-lg font-bold text-gray-800 mb-4">Hesap Bilgileri</h1>
+            <form onSubmit={handleSubmit} className="sm:space-y-6 space-y-3">
+              <div className="sm:grid sm:grid-cols-3 sm:gap-6 grid grid-cols-1 gap-2">
+                {/* Ad */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Ad</label>
                   <input
@@ -125,10 +135,11 @@ export default function HesabimPage() {
                     name="firstName"
                     value={userData.firstName || ''}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500"
+                    className="w-full px-2 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500 text-sm"
                     required
                   />
                 </div>
+                {/* Soyad */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Soyad</label>
                   <input
@@ -136,10 +147,11 @@ export default function HesabimPage() {
                     name="lastName"
                     value={userData.lastName || ''}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500"
+                    className="w-full px-2 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500 text-sm"
                     required
                   />
                 </div>
+                {/* TC Kimlik No */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">TC Kimlik No</label>
                   <input
@@ -147,7 +159,7 @@ export default function HesabimPage() {
                     name="identityNumber"
                     value={userData.identityNumber || ''}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500"
+                    className="w-full px-2 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500 text-sm"
                     maxLength={11}
                     disabled={userData.isForeigner}
                   />
@@ -165,8 +177,8 @@ export default function HesabimPage() {
                   </div>
                 </div>
               </div>
-
-              <div className="grid grid-cols-3 gap-8">
+              <div className="sm:grid sm:grid-cols-3 sm:gap-8 grid grid-cols-1 gap-2">
+                {/* Doğum Tarihi */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Doğum Tarihi</label>
                   <div className="flex gap-1 min-w-[220px]">
@@ -205,6 +217,7 @@ export default function HesabimPage() {
                     </select>
                   </div>
                 </div>
+                {/* Ülke Kodu ve Telefon */}
                 <div>
                   <div className="flex gap-2 items-end">
                     <div>
@@ -213,7 +226,7 @@ export default function HesabimPage() {
                         name="countryCode"
                         value={userData.countryCode || '+90'}
                         onChange={handleChange}
-                        className="w-32 px-3 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500"
+                        className="w-32 px-2 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500 text-sm"
                       >
                         <option value="+90">🇹🇷 TR (+90)</option>
                         <option value="+49">🇩🇪 DE (+49)</option>
@@ -232,11 +245,12 @@ export default function HesabimPage() {
                         name="phone"
                         value={userData.phone || ''}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500"
+                        className="w-full px-2 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500 text-sm"
                       />
                     </div>
                   </div>
                 </div>
+                {/* Cinsiyet */}
                 <div className="flex flex-col justify-end pb-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Cinsiyet</label>
                   <div className="flex gap-4">
@@ -265,54 +279,52 @@ export default function HesabimPage() {
                   </div>
                 </div>
               </div>
-
-              <div className="flex gap-4">
-                <div className="w-1/2">
+              <div className="flex gap-4 flex-col sm:flex-row">
+                <div className="w-full sm:w-1/2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">E-Posta</label>
                   <input
                     type="email"
                     name="email"
                     value={userData.email || ''}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500"
+                    className="w-full px-2 py-2 rounded-xl bg-gray-50 border-0 focus:ring-2 focus:ring-green-500 text-sm"
                     disabled
                   />
                 </div>
               </div>
-
-              <div className="flex justify-between items-center pt-4 border-t">
-                <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row justify-between items-center pt-4 border-t gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <button
                     type="button"
-                    className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50"
+                    className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 text-xs"
                   >
-                    <span className="text-sm">Pasaport Ekle</span>
+                    <span className="text-xs">Pasaport Ekle</span>
                   </button>
                   <button
                     type="button"
-                    className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50"
+                    className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 text-xs"
                   >
-                    <span className="text-sm">Mil Kart Ekle</span>
+                    <span className="text-xs">Mil Kart Ekle</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsChangePasswordModalOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50"
+                    className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 text-xs"
                   >
-                    <span className="text-sm">Şifre Değiştir</span>
+                    <span className="text-xs">Şifre Değiştir</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsDeleteAccountModalOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2 border border-red-300 text-red-600 rounded-xl hover:bg-red-50"
+                    className="flex items-center gap-2 px-3 py-2 border border-red-300 text-red-600 rounded-xl hover:bg-red-50 text-xs"
                   >
-                    <span className="text-sm">Hesabı Sil</span>
+                    <span className="text-xs">Hesabı Sil</span>
                   </button>
                 </div>
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className={`px-6 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 ${
+                  className={`px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 text-xs ${
                     isLoading ? 'opacity-75 cursor-not-allowed' : ''
                   }`}
                 >
@@ -323,18 +335,14 @@ export default function HesabimPage() {
           </div>
         </div>
       </div>
-
       <ChangePasswordModal
         isOpen={isChangePasswordModalOpen}
         onClose={() => setIsChangePasswordModalOpen(false)}
       />
-
       <DeleteAccountModal
         isOpen={isDeleteAccountModalOpen}
         onClose={() => setIsDeleteAccountModalOpen(false)}
       />
-
-      <PriceAlertsPage />
     </main>
   );
 } 

@@ -1,7 +1,8 @@
 'use client';
 
 import AccountSidebar from '@/components/AccountSidebar';
-import { Search, ArrowRight, Calendar, Users } from 'lucide-react';
+import { useSession, signOut } from 'next-auth/react';
+import { User, Plane, Users, Star, Receipt, Search, Bell, Heart, ArrowRight, Calendar } from 'lucide-react';
 
 export default function AramalarimPage() {
   const searches = [
@@ -31,11 +32,22 @@ export default function AramalarimPage() {
     }
   ];
 
+  const menuItems = [
+    { icon: User, label: 'Hesabım', href: '/hesabim' },
+    { icon: Plane, label: 'Seyahatlerim', href: '/hesabim/seyahatlerim' },
+    { icon: Users, label: 'Yolcularım', href: '/hesabim/yolcularim' },
+    { icon: Star, label: 'Puanlarım', href: '/hesabim/puanlarim' },
+    { icon: Receipt, label: 'Fatura Bilgilerim', href: '/hesabim/fatura' },
+    { icon: Search, label: 'Aramalarım', href: '/hesabim/aramalarim' },
+    { icon: Bell, label: 'Fiyat Alarmlarım', href: '/hesabim/alarmlar' },
+    { icon: Heart, label: 'Favorilerim', href: '/hesabim/favoriler' },
+  ];
+  const handleLogout = () => { signOut({ callbackUrl: '/' }); };
+
   return (
     <main className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         <div className="flex gap-8">
-          <AccountSidebar />
           
           <div className="flex-1 bg-white rounded-lg shadow-sm p-6">
             <div className="flex items-center gap-3 mb-6">

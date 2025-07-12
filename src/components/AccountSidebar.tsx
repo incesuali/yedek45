@@ -1,45 +1,30 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { 
-  User, 
-  Plane, 
-  Users, 
-  Star, 
-  Receipt, 
-  Search, 
-  Bell, 
-  Heart,
-  LogOut 
-} from 'lucide-react';
-import toast from 'react-hot-toast';
-import { signOut } from 'next-auth/react';
+import { usePathname } from 'next/navigation';
+import { LogOut } from 'lucide-react';
 
-const menuItems = [
-  { icon: User, label: 'Hesabım', href: '/hesabim' },
-  { icon: Plane, label: 'Seyahatlerim', href: '/hesabim/seyahatlerim' },
-  { icon: Users, label: 'Yolcularım', href: '/hesabim/yolcularim' },
-  { icon: Star, label: 'Puanlarım', href: '/hesabim/puanlarim' },
-  { icon: Receipt, label: 'Fatura Bilgilerim', href: '/hesabim/fatura' },
-  { icon: Search, label: 'Aramalarım', href: '/hesabim/aramalarim' },
-  { icon: Bell, label: 'Fiyat Alarmlarım', href: '/hesabim/alarmlar' },
-  { icon: Heart, label: 'Favorilerim', href: '/hesabim/favoriler' },
-];
+export interface AccountSidebarItem {
+  icon: React.ElementType;
+  label: string;
+  href: string;
+}
 
-export default function AccountSidebar() {
+interface AccountSidebarProps {
+  items: AccountSidebarItem[];
+  onLogout: () => void;
+  isDrawer?: boolean;
+  onItemClick?: () => void;
+}
+
+export default function AccountSidebar({ items, onLogout, isDrawer = false, onItemClick }: AccountSidebarProps) {
   const pathname = usePathname();
-  const router = useRouter();
-
-  const handleLogout = () => {
-    signOut({ callbackUrl: '/' });
-  };
-
   return (
-    <div className="w-64 bg-white rounded-lg shadow-sm p-4">
+    <div className={isDrawer ? 'w-full h-full bg-white p-4' : 'w-64 bg-white rounded-lg shadow-sm p-4'}>
       <nav className="space-y-2">
-        {menuItems.map((item) => {
+        {items.map((item) => {
           const isActive = pathname === item.href;
+          const Icon = item.icon;
           return (
             <Link
               key={item.href}
@@ -49,17 +34,16 @@ export default function AccountSidebar() {
                   ? 'bg-green-50 text-green-600' 
                   : 'text-gray-600 hover:bg-gray-50'
               }`}
+              onClick={onItemClick}
             >
-              <item.icon className="w-5 h-5" />
+              <Icon className="w-5 h-5" />
               <span>{item.label}</span>
             </Link>
           );
         })}
-
         <div className="my-4 border-t border-gray-200" />
-
         <button 
-          onClick={handleLogout}
+          onClick={onLogout}
           className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-50 w-full"
         >
           <LogOut className="w-5 h-5" />
