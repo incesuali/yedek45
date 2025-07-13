@@ -632,3 +632,24 @@ export async function getCustomerDetailBiletDukkaniReal(id: string, token: strin
   }
   return await response.json();
 } 
+
+// PNR ile rezervasyon sorgulama fonksiyonu (demo)
+export async function getReservationByPNR(pnr: string, lastName: string) {
+  // Demo amaçlı, PNR ve soyadına göre örnek rezervasyon verisi döndürür
+  return {
+    pnr: pnr,
+    passenger: {
+      firstName: 'Ahmet',
+      lastName: lastName
+    },
+    flight: {
+      flightNumber: 'TK123',
+      airlineName: 'Turkish Airlines',
+      origin: 'IST',
+      destination: 'AMS',
+      departureTime: '2024-01-15T09:00:00Z',
+      arrivalTime: '2024-01-15T11:30:00Z',
+      seat: '12A'
+    }
+  };
+} 

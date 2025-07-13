@@ -4,14 +4,14 @@ import { useState, useEffect, useRef } from 'react';
 import { MapPin, CalendarDays, UserCircle2, ArrowRightLeft, PlaneTakeoff, PlaneLanding, XCircle, Building, Car, Wifi, Info, HelpCircle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import CampaignCard from '@/components/CampaignCard';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import CampaignCard from '../components/CampaignCard';
 import dynamic from 'next/dynamic';
 import 'react-datepicker/dist/react-datepicker.css';
 import { tr } from 'date-fns/locale';
 import { format } from 'date-fns';
-import MobileAppBanner from '@/components/MobileAppBanner';
+import MobileAppBanner from '../components/MobileAppBanner';
 
 // Type tanımları
 interface Airport {
@@ -20,7 +20,7 @@ interface Airport {
   city: string;
 }
 
-const DateInput = dynamic(() => import('@/components/DateInput'), { ssr: false });
+const DateInput = dynamic(() => import('../components/DateInput'), { ssr: false });
 
 export default function Home() {
   // Form state'leri
@@ -840,4 +840,4 @@ export default function Home() {
       <Footer />
     </main>
   );
-}
+} 
