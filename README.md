@@ -249,7 +249,44 @@ export const authOptions: NextAuthOptions = {
 };
 ```
 
-#### 5. Git Repository Yönetimi
+#### 5. Auth Register API Sorunu
+**Sorun:** /api/auth/register API'si build sırasında Prisma hatası veriyor
+```
+Error: Failed to collect page data for /api/auth/register
+```
+
+**Çözüm:** Register API'si geçici olarak devre dışı bırakıldı
+```typescript
+// src/app/api/auth/register/route.ts
+export async function POST(request: Request) {
+  // Vercel deployment için geçici olarak devre dışı
+  return NextResponse.json({ 
+    message: 'Register API geçici olarak devre dışı',
+    note: 'Vercel deployment için Prisma ayarları gerekli'
+  }, { status: 200 });
+}
+```
+
+#### 6. Passengers API Sorunu
+**Sorun:** /api/passengers/[id] API'si build sırasında Prisma hatası veriyor
+```
+Error: Failed to collect page data for /api/passengers/[id]
+PrismaClientInitializationError: Prisma has detected that this project was built on Vercel
+```
+
+**Çözüm:** Passengers API'si geçici olarak devre dışı bırakıldı
+```typescript
+// src/app/api/passengers/[id]/route.ts
+export async function GET(request: Request, { params }: { params: { id: string } }) {
+  // Vercel deployment için geçici olarak devre dışı
+  return NextResponse.json({ 
+    message: 'Passengers API geçici olarak devre dışı',
+    note: 'Vercel deployment için Prisma ayarları gerekli'
+  }, { status: 200 });
+}
+```
+
+#### 7. Git Repository Yönetimi
 **Sorun:** Yanlış repository'ye push edilmesi
 - Başlangıçta `yedek35`'e push edildi
 - Sonra `yedek45`'e doğru repository ayarlandı
@@ -260,7 +297,7 @@ git remote set-url origin https://github.com/incesuali/yedek45.git
 git push origin main --force
 ```
 
-#### 6. Branch Yönetimi
+#### 8. Branch Yönetimi
 **Sorun:** `yedek43` branch'inde çalışılması
 - Ana kodlar `yedek43` branch'indeydi
 - `main` branch'e merge edildi
