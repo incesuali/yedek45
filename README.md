@@ -212,7 +212,44 @@ export async function POST() {
 }
 ```
 
-#### 4. Git Repository Yönetimi
+#### 4. NextAuth.js Prisma Adapter Sorunu
+**Sorun:** NextAuth.js API'si build sırasında Prisma bağlantısı hatası veriyor
+```
+Error: Failed to collect page data for /api/auth/[...next
+```
+
+**Çözüm:** NextAuth Prisma adapter'ı ve credentials provider'ı geçici olarak devre dışı bırakıldı
+```typescript
+// src/lib/auth.ts
+export const authOptions: NextAuthOptions = {
+    // Vercel deployment için geçici olarak Prisma adapter devre dışı
+    // adapter: PrismaAdapter(prisma) as Adapter,
+    providers: [
+        GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID!,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        }),
+        FacebookProvider({
+            clientId: process.env.FACEBOOK_CLIENT_ID!,
+            clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
+        }),
+        CredentialsProvider({
+            name: "Credentials",
+            credentials: {
+                email: { label: "Email", type: "email" },
+                password: { label: "Password", type: "password" }
+            },
+            async authorize(credentials) {
+                // Vercel deployment için geçici olarak devre dışı
+                return null;
+            }
+        })
+    ],
+    // ... diğer ayarlar
+};
+```
+
+#### 5. Git Repository Yönetimi
 **Sorun:** Yanlış repository'ye push edilmesi
 - Başlangıçta `yedek35`'e push edildi
 - Sonra `yedek45`'e doğru repository ayarlandı
@@ -223,7 +260,7 @@ git remote set-url origin https://github.com/incesuali/yedek45.git
 git push origin main --force
 ```
 
-#### 5. Branch Yönetimi
+#### 6. Branch Yönetimi
 **Sorun:** `yedek43` branch'inde çalışılması
 - Ana kodlar `yedek43` branch'indeydi
 - `main` branch'e merge edildi
