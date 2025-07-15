@@ -29,7 +29,8 @@ declare module "next-auth/jwt" {
 }
 
 export const authOptions: NextAuthOptions = {
-    adapter: PrismaAdapter(prisma) as Adapter,
+    // Vercel deployment için geçici olarak Prisma adapter devre dışı
+    // adapter: PrismaAdapter(prisma) as Adapter,
     providers: [
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -46,19 +47,7 @@ export const authOptions: NextAuthOptions = {
                 password: { label: "Password", type: "password" }
             },
             async authorize(credentials) {
-                if (!credentials?.email || !credentials.password) {
-                    return null;
-                }
-
-                const user = await prisma.user.findUnique({ where: { email: credentials.email } });
-
-                if (user && user.password) {
-                    const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
-                    if (isPasswordValid) {
-                        const name = (user.firstName && user.lastName) ? `${user.firstName} ${user.lastName}` : user.email;
-                        return { ...user, name };
-                    }
-                }
+                // Vercel deployment için geçici olarak devre dışı
                 return null;
             }
         })

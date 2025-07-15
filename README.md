@@ -159,6 +159,121 @@ npm run build
 npm run start
 ```
 
+## Vercel Deployment
+
+### Vercel'e Yükleme Süreci ve Yapılan Değişiklikler
+
+#### 1. Node.js Versiyonu Sorunu ve Çözümü
+**Sorun:** Vercel deployment sırasında Node.js versiyonu uyumsuzluğu
+```
+npm error notsup Required: {"node":"18.17.0", "npm":">=9.0.0"}
+npm error notsup Actual: {"npm":"10.8.2", "node":"v18.20.0"}
+```
+
+**Çözüm:** `package.json` dosyasından `engines` kısıtlaması tamamen kaldırıldı
+```json
+// Önceki hali:
+"engines": {
+  "node": "18.17.0",
+  "npm": ">=9.0.0"
+}
+
+// Sonraki hali:
+// engines kısmı tamamen kaldırıldı
+```
+
+#### 2. react-datepicker Modülü Eksikliği
+**Sorun:** Build sırasında `react-datepicker` modülü bulunamadı
+```
+Module not found: Can't resolve 'react-datepicker/dist/re'
+```
+
+**Çözüm:** Gerekli modüller yüklendi
+```bash
+npm install react-datepicker
+npm install @types/react-datepicker
+```
+
+#### 3. Prisma SQLite Sorunu
+**Sorun:** Vercel'de SQLite veritabanı çalışmıyor
+```
+Error: Failed to collect page data for /api/admin/make-fi
+```
+
+**Çözüm:** Admin API'si geçici olarak devre dışı bırakıldı
+```typescript
+// src/app/api/admin/make-first-admin/route.ts
+export async function POST() {
+  // Vercel deployment için geçici olarak devre dışı
+  return NextResponse.json({ 
+    message: 'API geçici olarak devre dışı',
+    note: 'Vercel deployment için Prisma ayarları gerekli'
+  }, { status: 200 });
+}
+```
+
+#### 4. Git Repository Yönetimi
+**Sorun:** Yanlış repository'ye push edilmesi
+- Başlangıçta `yedek35`'e push edildi
+- Sonra `yedek45`'e doğru repository ayarlandı
+
+**Çözüm:** Remote URL düzeltildi
+```bash
+git remote set-url origin https://github.com/incesuali/yedek45.git
+git push origin main --force
+```
+
+#### 5. Branch Yönetimi
+**Sorun:** `yedek43` branch'inde çalışılması
+- Ana kodlar `yedek43` branch'indeydi
+- `main` branch'e merge edildi
+
+**Çözüm:** Branch'ler birleştirildi
+```bash
+git checkout main
+git merge yedek43
+git push origin main --force
+```
+
+### Vercel Deployment Adımları
+
+1. **Vercel CLI Kurulumu:**
+   ```bash
+   npm install -g vercel
+   vercel login
+   ```
+
+2. **Proje Deploy:**
+   ```bash
+   vercel --prod --yes
+   ```
+
+3. **GitHub Entegrasyonu:**
+   - Vercel.com'da "New Project"
+   - GitHub repository seçimi (`yedek45`)
+   - Otomatik deployment ayarları
+
+4. **Deployment URL:**
+   - Production: `https://yedek45.vercel.app`
+   - Preview: Her commit'te yeni URL
+
+### Gelecek İyileştirmeler
+
+1. **PostgreSQL Entegrasyonu:**
+   - Vercel Postgres kullanımı
+   - Prisma schema güncellemesi
+   - Admin API'sinin tekrar aktif edilmesi
+
+2. **Environment Variables:**
+   - Database URL ayarları
+   - API key'leri
+   - Production/Development ayarları
+
+3. **Domain Ayarları:**
+   - Özel domain bağlama
+   - SSL sertifikası
+   - DNS ayarları
+
 ## Lisans
 MIT
 
