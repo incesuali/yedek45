@@ -56,9 +56,16 @@ export default function Header() {
                                 </span>
                             )}
                             <LanguageDropdown />
-                            <button onClick={() => setIsMenuOpen(true)} style={{ lineHeight: 0 }}>
-                                <Menu className="w-6 h-6" />
-                            </button>
+                            {/* MOBIL ONLY: Giriş yaptıysa insan ikonuna tıklayınca doğrudan Hesabım popup'ı açılır */}
+                            {status === 'authenticated' ? (
+                                <button onClick={() => setIsAccountSidebarOpen(true)} style={{ lineHeight: 0 }}>
+                                    <Menu className="w-6 h-6" />
+                                </button>
+                            ) : (
+                                <button onClick={() => setIsMenuOpen(true)} style={{ lineHeight: 0 }}>
+                                    <Menu className="w-6 h-6" />
+                                </button>
+                            )}
                         </div>
                         <div className="flex justify-center items-center -mt-[0.1rem] mb-0">
                             <Link href="/" className="text-2xl sm:text-3xl font-bold text-white leading-tight"><span>gurbet</span><span className="text-black">biz</span></Link>

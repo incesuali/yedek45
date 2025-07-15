@@ -16,6 +16,7 @@ import { getAirlines } from '@/services/airlineApi';
 import { Airline } from '@/types/airline';
 import MobileFlightSearchBox from '@/components/MobileFlightSearchBox';
 import React from 'react';
+import Image from 'next/image';
 
 // Demo fiyat verisi fonksiyonu (API'ye hazır)
 function getDemoPrices(baseDate: Date, currency: string = "EUR") {
@@ -46,6 +47,15 @@ async function fetchPricesFromAPI(origin: string, destination: string, baseDate:
   }
 }
 
+// ... existing code ...
+function safeFormat(date: Date | null | undefined, fmt: string, options?: any) {
+  return date ? format(date, fmt, options) : '';
+}
+// ... existing code ...
+// Tüm format(...) çağrılarını safeFormat(...) ile değiştir:
+// Örnek: format(date, 'd', { locale: tr }) => safeFormat(date, 'd', { locale: tr })
+// ... existing code ...
+
 // --- MODERN FLIGHTCARD TASARIMI BAŞLANGIÇ ---
 function FlightCard({ flight, onSelect, airlinesList }: { flight: any, onSelect: () => void, airlinesList: Airline[] }) {
   const router = useRouter();
@@ -58,10 +68,12 @@ function FlightCard({ flight, onSelect, airlinesList }: { flight: any, onSelect:
   };
 
   // Kalkış ve varış tarih-saat formatlama
-  const departureDateStr = flight.departureTime ? format(new Date(flight.departureTime), 'dd MMM', { locale: tr }) : '';
-  const departureTimeStr = flight.departureTime ? format(new Date(flight.departureTime), 'HH:mm') : '--:--';
-  const arrivalDateStr = flight.arrivalTime ? format(new Date(flight.arrivalTime), 'dd MMM', { locale: tr }) : '';
-  const arrivalTimeStr = flight.arrivalTime ? format(new Date(flight.arrivalTime), 'HH:mm') : '--:--';
+  const departureDateObj = flight.departureTime ? new Date(flight.departureTime) : undefined;
+  const arrivalDateObj = flight.arrivalTime ? new Date(flight.arrivalTime) : undefined;
+  const departureDateStr = safeFormat(departureDateObj, 'dd MMM', { locale: tr });
+  const departureTimeStr = safeFormat(departureDateObj, 'HH:mm');
+  const arrivalDateStr = safeFormat(arrivalDateObj, 'dd MMM', { locale: tr });
+  const arrivalTimeStr = safeFormat(arrivalDateObj, 'HH:mm');
 
   // --- MODERN TASARIM: HEM MOBİL HEM DESKTOP ---
   return (
@@ -108,7 +120,7 @@ function FlightCard({ flight, onSelect, airlinesList }: { flight: any, onSelect:
       <div className="flex items-center justify-between w-full mt-0.5">
         <div className="flex items-center gap-1.5 min-w-0">
           {airlineObj?.logoUrl ? (
-            <img src={airlineObj.logoUrl} alt={airlineObj.name} className="h-6 w-6 object-contain" />
+            <Image src={airlineObj.logoUrl} alt={airlineObj.name} width={24} height={24} className="h-6 w-6 object-contain" />
           ) : (
             <div className="h-6 w-6 rounded-full bg-gray-200 flex items-center justify-center text-base font-bold text-gray-500">
               {(airlineObj?.name || flight.airlineName || flight.airline || 'H')[0]}
@@ -478,7 +490,7 @@ export default function FlightSearchPage() {
 
   // Tarihleri hazırla
   const departureDate = departureDateStr ? parseISO(departureDateStr) : new Date();
-  const returnDate = returnDateStr ? parseISO(returnDateStr) : null;
+  const returnDate = returnDateStr ? parseISO(returnDateStr) : undefined;
 
   // Fiyat kutuları için API entegrasyonu
   useEffect(() => {
@@ -752,8 +764,8 @@ export default function FlightSearchPage() {
     barChartContent = departurePrices.map(({ date, price, currency }) => {
       const isSelected = selectedDeparture && isSameDay(date, selectedDeparture);
       const barHeight = getBarHeight(price);
-      const dayStr = format(date, "dd MMM", { locale: tr });
-      const weekDay = format(date, "EEE", { locale: tr });
+      const dayStr = safeFormat(date, "dd MMM", { locale: tr });
+      const weekDay = safeFormat(date, "EEE", { locale: tr });
       return (
         <button
           key={date.toISOString()}
@@ -861,7 +873,7 @@ export default function FlightSearchPage() {
                     onChange={() => handleAirlineChange(airlineName)}
                   />
                   {airlineObj?.logoUrl && (
-                    <img src={airlineObj.logoUrl} alt={airlineObj.name} className="h-5 w-5 object-contain" />
+                    <Image src={airlineObj.logoUrl} alt={airlineObj.name} width={20} height={20} className="h-5 w-5 object-contain" />
                   )}
                   <span>{airlineObj?.name || airlineName}</span>
                 </label>
@@ -1114,6 +1126,11 @@ export default function FlightSearchPage() {
     }
   }, [departurePrices, selectedDeparture]);
 
+  // format(selectedDeparture, 'yyyy-MM-dd')
+  const formattedSelectedDeparture = selectedDeparture ? format(selectedDeparture, 'yyyy-MM-dd') : '';
+  // format(selectedReturn, 'yyyy-MM-dd')
+  const formattedSelectedReturn = selectedReturn ? format(selectedReturn, 'yyyy-MM-dd') : '';
+
   return (
     <>
       <Header />
@@ -1143,7 +1160,7 @@ export default function FlightSearchPage() {
                           onChange={() => handleAirlineChange(airlineName)}
                         />
                         {airlineObj?.logoUrl && (
-                          <img src={airlineObj.logoUrl} alt={airlineObj.name} className="h-5 w-5 object-contain" />
+                          <Image src={airlineObj.logoUrl} alt={airlineObj.name} width={20} height={20} className="h-5 w-5 object-contain" />
                         )}
                         <span>{airlineObj?.name || airlineName}</span>
                       </label>
@@ -1468,16 +1485,12 @@ export default function FlightSearchPage() {
           <div className="mt-1 mb-1 md:mt-6 md:mb-6"> {/* Restore mt-1 for original gap */}
             {/* Mobil özel fiyat-tarih kutuları */}
             <div className="md:hidden flex flex-col items-center w-full">
-              {/* SADECE MOBİL: Başlık ve yön bilgisini fiyat-tarih barının üstüne aldık - AI düzenlemesi */}
-              {/* --- AI: Mobilde başlık ve yön bilgisi üstte --- */}
-              <div className="flex items-center gap-2 mt-2">
-                <span className="text-lg font-bold text-gray-800">Gidiş Uçuşları</span>
-              </div>
-              <div className="text-gray-500 text-sm mt-0 mb-1">{origin} → {destination}</div>
-              {/* --- AI: Mobilde başlık ve yön bilgisi üstte --- */}
               <div className="w-full flex flex-col items-center">
                 <div className="flex items-center w-full justify-center gap-2 relative">
-                  <button className="absolute left-0 z-10 bg-white rounded-full p-1 shadow-md" style={{top: '50%', transform: 'translateY(-50%)'}} onClick={() => { setMobilePriceBarStartDate((prev: Date) => subDays(prev, 7)); }}>
+                  <button className="absolute left-0 z-10 bg-white rounded-full p-1 shadow-md" style={{top: '50%', transform: 'translateY(-50%)'}}
+                    onClick={() => {
+                      setMobilePriceBarStartDate((prev: Date) => subDays(prev, 7));
+                    }}>
                     <span className="text-green-600 text-2xl">&#60;</span>
                   </button>
                   <div id="mobile-date-scroll" className="flex gap-0 overflow-x-auto no-scrollbar px-8 py-2 w-full" style={{scrollSnapType: 'x mandatory'}}>
@@ -1502,8 +1515,8 @@ export default function FlightSearchPage() {
                         const currency = found ? found.currency : null;
                         const isSelected = isSameDay(date, selectedDeparture);
                         const isToday = isSameDay(date, today);
-                        const dayNum = format(date, "d", { locale: tr });
-                        const weekDay = format(date, "EEE", { locale: tr });
+                        const dayNum = safeFormat(date, "d", { locale: tr });
+                        const weekDay = safeFormat(date, "EEE", { locale: tr });
                         // Fiyat kutusu
                         let priceBox = (
                           <span className={`w-full px-2.5 py-1 text-center text-[13px] font-normal mb-1 rounded-none whitespace-nowrap flex items-center justify-center ${isSelected ? 'bg-green-600 text-white' : 'bg-green-100 text-green-700'}`}>
@@ -1538,7 +1551,10 @@ export default function FlightSearchPage() {
                       });
                     })()}
                   </div>
-                  <button className="absolute right-0 z-10 bg-white rounded-full p-1 shadow-md" style={{top: '50%', transform: 'translateY(-50%)'}} onClick={() => { setMobilePriceBarStartDate((prev: Date) => addDays(prev, 7)); }}>
+                  <button className="absolute right-0 z-10 bg-white rounded-full p-1 shadow-md" style={{top: '50%', transform: 'translateY(-50%)'}}
+                    onClick={() => {
+                      setMobilePriceBarStartDate((prev: Date) => addDays(prev, 7));
+                    }}>
                     <span className="text-green-600 text-2xl">&#62;</span>
                   </button>
                 </div>
@@ -1546,16 +1562,15 @@ export default function FlightSearchPage() {
                 <div className="flex items-center w-full mt-1 mb-2">
                   <div className="flex-1 border-t border-gray-200"></div>
                   <div className="px-3 text-sm text-gray-700 font-semibold" style={{whiteSpace:'nowrap'}}>
-                    {format(mobilePriceBarStartDate, 'MMMM', { locale: tr })}
+                    {safeFormat(mobilePriceBarStartDate, 'MMMM', { locale: tr })}
                   </div>
                   <div className="flex-1 border-t border-gray-200"></div>
                 </div>
               </div>
-              {/* --- AI: Mobilde başlık ve yön bilgisi alta taşındı, eski kod kaldırıldı --- */}
-              {/* <div className="flex items-center gap-2 mt-2">
+              <div className="flex items-center gap-2 mt-2">
                 <span className="text-lg font-bold text-gray-800">Gidiş Uçuşları</span>
               </div>
-              <div className="text-gray-500 text-sm mt-0 mb-1">{origin} → {destination}</div> */}
+              <div className="text-gray-500 text-sm mt-0 mb-1">{origin} → {destination}</div>
             </div>
             {/* Desktop eski barChartContent */}
             <div className="hidden md:flex flex-col items-center w-full">

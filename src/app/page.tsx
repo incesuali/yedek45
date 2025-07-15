@@ -200,8 +200,8 @@ export default function Home() {
     <main className="min-h-screen overflow-x-hidden max-w-full">
       <Header />
       <div className="relative overflow-x-hidden max-w-full">
-        {/* Yeşil alan */}
-        <div className="bg-green-500 text-center text-white pb-5 sm:pb-32 pt-[1.2rem] sm:pt-8 relative z-10 rounded-b-[16px] sm:rounded-b-[32px]">
+        {/* Topbar - MOBIL ONLY: Mobilde mavi, masaüstünde yeşil */}
+        <div className="bg-green-500 sm:bg-green-500 text-center text-white pb-5 sm:pb-32 pt-[1.2rem] sm:pt-8 relative z-10 rounded-b-[16px] sm:rounded-b-[32px]">
           <div className="container mx-auto px-4">
             <h1 className="hidden sm:block sm:relative text-2xl sm:text-5xl font-bold mb-1 sm:mb-2 z-30">
               <span className="text-white">gurbet</span>
@@ -487,8 +487,8 @@ export default function Home() {
                       value={fromInput}
                       onChange={e => {
                         setFromInput(e.target.value);
-                        setShowFromSuggestions(true);
                         searchAirports(e.target.value, setFromSuggestions);
+                        setShowFromSuggestions(true);
                       }}
                       onFocus={() => setShowFromSuggestions(true)}
                     />
@@ -532,8 +532,8 @@ export default function Home() {
                       value={toInput}
                       onChange={e => {
                         setToInput(e.target.value);
-                        setShowToSuggestions(true);
                         searchAirports(e.target.value, setToSuggestions);
+                        setShowToSuggestions(true);
                       }}
                       onFocus={() => setShowToSuggestions(true)}
                     />
@@ -567,7 +567,7 @@ export default function Home() {
                     <DateInput
                       value={departureDate}
                       onChange={handleDepartureChange}
-                      className="flex-1 bg-transparent border-none outline-none text-[14px] font-semibold placeholder-[#6b7280] p-0"
+                      className="flex-1 bg-transparent border-none outline-none text-[15px] font-semibold placeholder-[#6b7280] p-0"
                       placeholder="Gidis Tarihi"
                     />
                   </div>
